@@ -75,7 +75,14 @@ connection_request_accepted = {
 
 connection_reply_accepted = {
     "id": messages.ID_CONNECTION_REPLY_ACCEPTED,
-    
+    "address": None,
+    "system_addresses": [],
+    "ping_time": None,
+    "pong_time": None
+}
+
+connection_reply_canceled = {
+    "id": messages.ID_CONNECTION_REPLY_CANCELED
 }
 
 unconnected_pong = {
