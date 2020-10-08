@@ -73,6 +73,11 @@ connection_request_accepted = {
     "time": None
 }
 
+connection_reply_accepted = {
+    "id": messages.ID_CONNECTION_REPLY_ACCEPTED,
+    
+}
+
 unconnected_pong = {
     "id": messages.ID_UNCONNECTED_PONG,
     "time": None,
