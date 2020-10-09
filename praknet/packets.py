@@ -112,16 +112,16 @@ encapsulated = {
 
 @staticmethod
 def read_unconnected_ping(data):
-    unconnected_ping["id"] = struct.unpack(">B", data[0])
-    unconnected_ping["time"] = struct.unpack(">Q", data[1:9])
+    unconnected_ping["id"] = struct.unpack(">B", data[0])[0]
+    unconnected_ping["time"] = struct.unpack(">Q", data[1:9])[0]
     unconnected_ping["magic"] = data[9:17]
-    unconnected_ping["client_guid"] = struct.unpack(">Q", data[25:9])
+    unconnected_ping["client_guid"] = struct.unpack(">Q", data[25:9])[0]
     
 @staticmethod
 def write_unconnected_ping():
     buffer = b""
-    buffer += unconnected_ping["id"]
-    buffer += unconnected_ping["time"]
+    buffer += struct.pack(">B", unconnected_ping["id"])
+    buffer += struct.pack(">Q", unconnected_ping["time"])
     buffer += unconnected_ping["magic"]
-    buffer += unconnected_ping["client_guid"]
+    buffer += struct.pack(">Q", unconnected_ping["client_guid"])
     return buffer
