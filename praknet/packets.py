@@ -100,3 +100,11 @@ advertise_system = {
     "magic": None,
     "data": None
 }
+
+encapsulated = {
+    "iteration": None,
+    "encapsulation": None,
+    "length": None,
+    "id": None,
+    "data": None
+}
