@@ -16,6 +16,6 @@ def packet_handler(data, address):
 def run():
     socket.create_socket(19132)
     while True:
-        recv = socket.receive_buffer()
-        if recv != None:
-            packet_handler(recv[0], recv[1])
+        data, addr = socket.receive_buffer()
+        if data != None:
+            packet_handler(data, addr)
