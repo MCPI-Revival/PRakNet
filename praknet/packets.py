@@ -113,9 +113,9 @@ encapsulated = {
 @staticmethod
 def read_unconnected_ping(data):
     unconnected_ping["id"] = data[0]
-    unconnected_ping["time"] = struct.unpack(">Q", data[1:9])[0]
-    unconnected_ping["magic"] = data[9:17]
-    unconnected_ping["client_guid"] = struct.unpack(">Q", data[25:9])[0]
+    unconnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    unconnected_ping["magic"] = data[9:9 + 16]
+    unconnected_ping["client_guid"] = struct.unpack(">Q", data[25:25 + 8])[0]
     
 @staticmethod
 def write_unconnected_ping():
@@ -129,9 +129,9 @@ def write_unconnected_ping():
 @staticmethod
 def read_unconnected_ping_open_connections(data):
     unconnected_ping_open_connections["id"] = data[0]
-    unconnected_ping_open_connections["time"] = struct.unpack(">Q", data[1:9])[0]
-    unconnected_ping_open_connections["magic"] = data[9:17]
-    unconnected_ping_open_connections["client_guid"] = struct.unpack(">Q", data[25:9])[0]
+    unconnected_ping_open_connections["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    unconnected_ping_open_connections["magic"] = data[9:9 + 16]
+    unconnected_ping_open_connections["client_guid"] = struct.unpack(">Q", data[25:25 + 8])[0]
     
 @staticmethod
 def write_unconnected_ping_open_connections():
@@ -140,4 +140,23 @@ def write_unconnected_ping_open_connections():
     buffer += struct.pack(">Q", unconnected_ping_open_connections["time"])
     buffer += unconnected_ping_open_connections["magic"]
     buffer += struct.pack(">Q", unconnected_ping_open_connections["client_guid"])
+    return buffer
+
+@staticmethod
+def read_unconnected_pong(data):
+    unconnected_pong["id"] = data[0]
+    unconnected_pong["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    unconnected_pong["server_guid"] = struct.unpack(">Q", data[9:9 + 8])
+    unconnected_pong["magic"] = data[17:17 + 16]
+    unconnected_pong["data"] = data[35:35 + struct.unpack(">H", data[33:33 + 2])[0]].decode()
+    
+@staticmethod
+def write_unconnected_pong():
+    buffer = b""
+    buffer += struct.pack(">B", unconnected_pong["id"])
+    buffer += struct.pack(">Q", unconnected_pong["time"])
+    buffer += struct.pack(">Q", unconnected_pong["server_guid"])
+    buffer += unconnected_pong["magic"]
+    buffer += struct.pack(">H", len(unconnected_pong["data"]))
+    buffer += unconnected_pong["data"].encode()
     return buffer
