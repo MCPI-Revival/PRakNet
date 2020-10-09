@@ -112,7 +112,7 @@ encapsulated = {
 
 @staticmethod
 def read_unconnected_ping(data):
-    unconnected_ping["id"] = struct.unpack(">B", data[0])[0]
+    unconnected_ping["id"] = data[0]
     unconnected_ping["time"] = struct.unpack(">Q", data[1:9])[0]
     unconnected_ping["magic"] = data[9:17]
     unconnected_ping["client_guid"] = struct.unpack(">Q", data[25:9])[0]
@@ -124,4 +124,20 @@ def write_unconnected_ping():
     buffer += struct.pack(">Q", unconnected_ping["time"])
     buffer += unconnected_ping["magic"]
     buffer += struct.pack(">Q", unconnected_ping["client_guid"])
+    return buffer
+
+@staticmethod
+def read_unconnected_ping_open_connections(data):
+    unconnected_ping_open_connections["id"] = data[0]
+    unconnected_ping_open_connections["time"] = struct.unpack(">Q", data[1:9])[0]
+    unconnected_ping_open_connections["magic"] = data[9:17]
+    unconnected_ping_open_connections["client_guid"] = struct.unpack(">Q", data[25:9])[0]
+    
+@staticmethod
+def write_unconnected_ping():
+    buffer = b""
+    buffer += struct.pack(">B", unconnected_ping_open_connections["id"])
+    buffer += struct.pack(">Q", unconnected_ping_open_connections["time"])
+    buffer += unconnected_ping_open_connections["magic"]
+    buffer += struct.pack(">Q", unconnected_ping_open_connections["client_guid"])
     return buffer
