@@ -1,8 +1,7 @@
 import socket as s
 
 socket = None
-    
-@staticmethod
+
 def create_socket(port):
     socket = s.socket(s.AF_INET, s.SOCK_DGRAM, s.SOL_UDP)
     try:
@@ -11,8 +10,8 @@ def create_socket(port):
         print(f"Failed to bind!")
         print(str(e))
     else:
-        socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        socket.setsockopt(s.SOL_SOCKET, s.SO_REUSEADDR, 1)
+        socket.setsockopt(s.SOL_SOCKET, s.SO_BROADCAST, 1)
        
 def receive_buffer():
     try:
