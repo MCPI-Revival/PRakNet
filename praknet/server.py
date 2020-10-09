@@ -4,7 +4,8 @@ from praknet import socket
 
 options = {
     "name": "",
-    "port": 0,
+    "ip": "0.0.0.0",
+    "port": 19132,
     "custom_handler": lambda data, addr, socket: 0,
     "custom_packets": [0x84]
 }
@@ -15,7 +16,7 @@ def packet_handler(data, address):
         socket.sendBuffer(handler.handle_unconnected_ping(data), address)
 
 def run():
-    socket.create_socket(19132)
+    socket.create_socket((options.ip, options.port))
     while True:
         recv = socket.receive_buffer()
         if recv != None:
