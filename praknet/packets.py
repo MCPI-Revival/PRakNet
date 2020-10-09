@@ -110,14 +110,12 @@ encapsulated = {
     "data": None
 }
 
-@staticmethod
 def read_unconnected_ping(data):
     unconnected_ping["id"] = data[0]
     unconnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
     unconnected_ping["magic"] = data[9:9 + 16]
     unconnected_ping["client_guid"] = struct.unpack(">Q", data[25:25 + 8])[0]
     
-@staticmethod
 def write_unconnected_ping():
     buffer = b""
     buffer += struct.pack(">B", unconnected_ping["id"])
@@ -126,14 +124,12 @@ def write_unconnected_ping():
     buffer += struct.pack(">Q", unconnected_ping["client_guid"])
     return buffer
 
-@staticmethod
 def read_unconnected_ping_open_connections(data):
     unconnected_ping_open_connections["id"] = data[0]
     unconnected_ping_open_connections["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
     unconnected_ping_open_connections["magic"] = data[9:9 + 16]
     unconnected_ping_open_connections["client_guid"] = struct.unpack(">Q", data[25:25 + 8])[0]
     
-@staticmethod
 def write_unconnected_ping_open_connections():
     buffer = b""
     buffer += struct.pack(">B", unconnected_ping_open_connections["id"])
@@ -142,7 +138,6 @@ def write_unconnected_ping_open_connections():
     buffer += struct.pack(">Q", unconnected_ping_open_connections["client_guid"])
     return buffer
 
-@staticmethod
 def read_unconnected_pong(data):
     unconnected_pong["id"] = data[0]
     unconnected_pong["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
@@ -150,7 +145,6 @@ def read_unconnected_pong(data):
     unconnected_pong["magic"] = data[17:17 + 16]
     unconnected_pong["data"] = data[35:35 + struct.unpack(">H", data[33:33 + 2])[0]].decode()
     
-@staticmethod
 def write_unconnected_pong():
     buffer = b""
     buffer += struct.pack(">B", unconnected_pong["id"])
