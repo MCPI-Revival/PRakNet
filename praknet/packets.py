@@ -1,4 +1,5 @@
 from praknet import messages
+import struct
 
 connected_ping = {
     "id": messages.ID_CONNECTED_PING,
@@ -108,3 +109,19 @@ encapsulated = {
     "id": None,
     "data": None
 }
+
+@staticmethod
+def read_unconnected_ping(data):
+    unconnected_ping["id"] = struct.unpack(">B", data[0])
+    unconnected_ping["time"] = struct.unpack(">Q", data[1:9])
+    unconnected_ping["magic"] = data[9:17]
+    unconnected_ping["client_guid"] = struct.unpack(">Q", data[25:9])
+    
+@staticmethod
+def write_unconnected_ping():
+    buffer = b""
+    buffer += unconnected_ping["id"]
+    buffer += unconnected_ping["time"]
+    buffer += unconnected_ping["magic"]
+    buffer += unconnected_ping["client_guid"]
+    return buffer
