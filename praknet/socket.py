@@ -14,7 +14,7 @@ def create_socket(port):
         socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
        
-def receiveBuffer():
+def receive_buffer():
     try:
         data = socket.recvfrom(65535, 0)
         print(f"IN -> {data}")
@@ -22,7 +22,7 @@ def receiveBuffer():
     except:
         pass
           
-def sendBuffer(buffer, address):
+def send_buffer(buffer, address):
     data = socket.sendto(buffer, address)
     print(f"OUT -> {data}")
     return data
