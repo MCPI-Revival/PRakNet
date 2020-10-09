@@ -134,7 +134,7 @@ def read_unconnected_ping_open_connections(data):
     unconnected_ping_open_connections["client_guid"] = struct.unpack(">Q", data[25:9])[0]
     
 @staticmethod
-def write_unconnected_ping():
+def write_unconnected_ping_open_connections():
     buffer = b""
     buffer += struct.pack(">B", unconnected_ping_open_connections["id"])
     buffer += struct.pack(">Q", unconnected_ping_open_connections["time"])
