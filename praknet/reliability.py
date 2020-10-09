@@ -7,7 +7,6 @@ unreliable_ack_receipt = 5
 reliable_ack_receipt = 6
 reliable_ordered_ack_receipt = 7
 
-@staticmethod
 def is_reliable(reliability):
     if reliability == reliable:
         return True
@@ -22,7 +21,6 @@ def is_reliable(reliability):
     else:
         return False
         
-@staticmethod
 def isSequenced(reliability):
         if reliability == unreliable_sequenced:
             return True
@@ -31,7 +29,6 @@ def isSequenced(reliability):
         else:
             return False
 
-@staticmethod
 def is_ordered(reliability):
     if reliability == reliable_ordered:
         return True
@@ -40,7 +37,6 @@ def is_ordered(reliability):
     else:
         return False
 
-@staticmethod
 def is_sequenced_or_ordered(reliability):
     if reliability == unreliable_sequenced:
         return True
