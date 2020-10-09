@@ -1,13 +1,12 @@
 import socket as s
 
-socket = None
+socket = s.socket(s.AF_INET, s.SOCK_DGRAM, s.SOL_UDP)
 
-def create_socket(port):
-    socket = s.socket(s.AF_INET, s.SOCK_DGRAM, s.SOL_UDP)
+def create_socket(address):
     try:
-        socket.bind(("0.0.0.0", port))
+        socket.bind(address)
     except socket.error as e:
-        print(f"Failed to bind!")
+        print("Failed to bind!")
         print(str(e))
     else:
         socket.setsockopt(s.SOL_SOCKET, s.SO_REUSEADDR, 1)
