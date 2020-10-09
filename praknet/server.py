@@ -16,7 +16,7 @@ def packet_handler(data, address):
         socket.sendBuffer(handler.handle_unconnected_ping(data), address)
 
 def run():
-    socket.create_socket((options.ip, options.port))
+    socket.create_socket((options["ip"], options["port"]))
     while True:
         recv = socket.receive_buffer()
         if recv != None:
