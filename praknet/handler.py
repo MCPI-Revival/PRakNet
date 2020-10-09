@@ -1,6 +1,5 @@
 from praknet import packets
 
-@staticmethod
 def handle_unconnected_ping(data):
     packets.read_unconnected_ping(data)
     packets.unconnected_pong["time"] = packets.unconnected_ping["time"]
