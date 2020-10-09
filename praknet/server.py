@@ -13,7 +13,7 @@ options = {
 def packet_handler(data, address):
     id = data[0]
     if id == messages.ID_UNCONNECTED_PING:
-        socket.sendBuffer(handler.handle_unconnected_ping(data), address)
+        socket.send_buffer(handler.handle_unconnected_ping(data), address)
 
 def run():
     socket.create_socket((options["ip"], options["port"]))
