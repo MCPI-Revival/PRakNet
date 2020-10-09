@@ -10,12 +10,14 @@ options = {
 }
 
 def packet_handler(data, address):
-    if data[0] == messages.ID_UNCONNECTED_PING:
+    id = data[0]
+    if id == messages.ID_UNCONNECTED_PING:
         socket.sendBuffer(handler.handle_unconnected_ping(data), address)
 
 def run():
     socket.create_socket(19132)
     while True:
-        data, addr = socket.receive_buffer()
-        if data != None:
+        recv = socket.receive_buffer()
+        if recv != None:
+            data, addr = recv
             packet_handler(data, addr)
