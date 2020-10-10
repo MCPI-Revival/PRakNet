@@ -174,9 +174,21 @@ def write_unconnected_pong():
 def read_ack(data):
     ack["id"] = data[0]
     ack["count"] = struct.unpack(">H", data[1:1 + 2])[0]
-    ack["is_range"] = data[3:3 + 1]
+    ack["is_range"] = struct.unpack(">B", data[3:3 + 1])
     if ack["is_range"] == 0:
         ack["range"]["start_index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
         ack["range"]["end_index"] = struct.unpack('<L', data[7:7 + 3] + b'\x00')[0]
     else:
         ack["no_range"]["index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
+
+def write_ack():
+    buffer = b""
+    buffer += struct.pack(">B", ack["id"])
+    buffer += struct.pack(">H", ack["count"])
+    buffer += struct.pack(">B", ack["is_range"])
+    if ack["is_range"] == 0:
+        buffer += struct.pack("<L", ack["range"]["start_index"])[0:-1]
+        buffer += struct.pack("<L", ack["range"]["end_index"])[0:-1]
+    else:
+        buffer += struct.pack("<L", ack["no_range"]["index"])[0:-1]
+    return buffer
