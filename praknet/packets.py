@@ -158,7 +158,10 @@ def read_unconnected_ping(data):
     unconnected_ping["id"] = data[0]
     unconnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
     unconnected_ping["magic"] = data[9:9 + 16]
-    unconnected_ping["client_guid"] = struct.unpack(">Q", data[25:25 + 8])[0]
+    try:
+        unconnected_ping["client_guid"] = struct.unpack(">Q", data[25:25 + 8])[0]
+    except:
+        unconnected_ping["client_guid"] = 12345678
     
 def write_unconnected_ping():
     buffer = b""
@@ -172,7 +175,11 @@ def read_unconnected_ping_open_connections(data):
     unconnected_ping_open_connections["id"] = data[0]
     unconnected_ping_open_connections["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
     unconnected_ping_open_connections["magic"] = data[9:9 + 16]
-    unconnected_ping_open_connections["client_guid"] = struct.unpack(">Q", data[25:25 + 8])[0]
+    try:
+        unconnected_ping_open_connections["client_guid"] = struct.unpack(">Q", data[25:25 + 8])[0]
+    except:
+        unconnected_ping_open_connections["client_guid"] = 12345678
+    
     
 def write_unconnected_ping_open_connections():
     buffer = b""
