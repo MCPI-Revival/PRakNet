@@ -218,14 +218,18 @@ def write_open_connection_request_1():
     buffer += struct.pack(">B", open_connection_request_1["protocol_version"])
     for i in range(0, open_connection_request_1["mtu_size"] - len(buffer)):
         buffer += b"\x00"
+    return bufferbujujjjjjjjjjjj,wwww
         
 def read_open_connection_request_2(data):
     open_connection_request_2["id"] = data[0]
     open_connection_request_2["magic"] = data[1:1 + 16]
     open_connection_request_2["server_address"] = read_address(data[17:17 + 7])
-    open_connection_request_2["mtu_size"] = struct.unpack(">H", data[24:24 + 2])
-    open_connection_request_2["client_guid"] = struct.unpack(">Q", data[26:26 + 8])
+    open_connection_request_2["mtu_size"] = struct.unpack(">H", data[24:24 + 2])[0]
+    open_connection_request_2["client_guid"] = struct.unpack(">Q", data[26:26 + 8])[0]
 
+def write_open_connection_request_2():
+    buffer = b""
+    
 def read_nack(data):
     nack["id"] = data[0]
     nack["count"] = struct.unpack(">H", data[1:1 + 2])[0]
