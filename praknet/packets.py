@@ -106,7 +106,7 @@ nack = {
     "id": messages.ID_NACK,
     "count": None,
     "is_range": None,
-    "no_range": {"index": None}
+    "no_range": {"index": None},
     "range": {"start_index": None, "end_index": None}
 }
 
@@ -114,7 +114,7 @@ ack = {
     "id": messages.ID_ACK,
     "count": None,
     "is_range": None,
-    "no_range": {"index": None}
+    "no_range": {"index": None},
     "range": {"start_index": None, "end_index": None}
 }
 
