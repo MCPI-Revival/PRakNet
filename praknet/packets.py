@@ -171,6 +171,28 @@ def write_unconnected_pong():
     buffer += unconnected_pong["data"].encode()
     return buffer
 
+def read_nack(data):
+    nack["id"] = data[0]
+    nack["count"] = struct.unpack(">H", data[1:1 + 2])[0]
+    nack["is_range"] = struct.unpack(">B", data[3:3 + 1])
+    if nack["is_range"] == 0:
+        nack["range"]["start_index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
+        nack["range"]["end_index"] = struct.unpack('<L', data[7:7 + 3] + b'\x00')[0]
+    else:
+        nack["no_range"]["index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
+
+def write_nack():
+    buffer = b""
+    buffer += struct.pack(">B", nack["id"])
+    buffer += struct.pack(">H", nack["count"])
+    buffer += struct.pack(">B", nack["is_range"])
+    if nack["is_range"] == 0:
+        buffer += struct.pack("<L", nack["range"]["start_index"])[0:-1]
+        buffer += struct.pack("<L", nack["range"]["end_index"])[0:-1]
+    else:
+        buffer += struct.pack("<L", nack["no_range"]["index"])[0:-1]
+    return buffer
+
 def read_ack(data):
     ack["id"] = data[0]
     ack["count"] = struct.unpack(">H", data[1:1 + 2])[0]
