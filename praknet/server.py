@@ -8,11 +8,10 @@ options = {
     "name": "",
     "ip": "0.0.0.0",
     "port": 19132,
+    "server_guid": struct.unpack(">Q", os.urandom(8)),
     "custom_handler": lambda data, addr, socket: 0,
     "custom_packets": [0x84]
 }
-
-server_guid = struct.unpack(">Q", os.urandom(8))
 
 def set_option(option, value):
     options[option] = value
