@@ -126,6 +126,20 @@ encapsulated = {
     "data": None
 }
 
+def read_address(data):
+    version = data[0]
+    if version == 4:
+        addr = ".".join([
+            str((~struct.unpack(">B", data[1:1 + 1])[0]) & 0xff),
+            str((~struct.unpack(">B", data[2:2 + 1])[0]) & 0xff),
+            str((~struct.unpack(">B", data[3:3 + 1])[0]) & 0xff),
+            str((~struct.unpack(">B", data[4:4 + 1])[0]) & 0xff)
+        ])
+        port = struct.unpack(">H", data[5:5 + 2])[0]
+        return addr, port, version
+    else:
+        raise Exception(f"Unknown address version {version}")
+
 def read_unconnected_ping(data):
     unconnected_ping["id"] = data[0]
     unconnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
