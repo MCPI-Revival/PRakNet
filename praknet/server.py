@@ -10,6 +10,9 @@ options = {
     "custom_packets": [0x84]
 }
 
+def set_option(option, value):
+    options[option] = value
+
 def packet_handler(data, address):
     id = data[0]
     if id == messages.ID_UNCONNECTED_PING:
