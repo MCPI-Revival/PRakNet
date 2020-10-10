@@ -216,7 +216,8 @@ def write_open_connection_request_1():
     buffer = b""
     buffer += struct.pack(">B", open_connection_request_1["id"])
     buffer += struct.pack(">B", open_connection_request_1["protocol_version"])
-    buffer += b"" 
+    for i in range(0, open_connection_request_1["mtu_size"] - len(buffer)):
+        buffer += b"\x00"
 
 def read_nack(data):
     nack["id"] = data[0]
