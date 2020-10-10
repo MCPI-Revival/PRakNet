@@ -8,7 +8,7 @@ options = {
     "name": "",
     "ip": "0.0.0.0",
     "port": 19132,
-    "server_guid": struct.unpack(">Q", os.urandom(8)),
+    "server_guid": struct.unpack(">Q", os.urandom(8))[0],
     "custom_handler": lambda data, addr, socket: 0,
     "custom_packets": [0x84]
 }
