@@ -139,6 +139,20 @@ def read_address(data):
         return addr, port, version
     else:
         raise Exception(f"Unknown address version {version}")
+        
+def write_address(addr, port, version):
+    buffer = b""
+    buffer += struct.pack(">B", version)
+    if version == 4:
+        parts = addr.split(".")
+        parts_count = len(parts)
+        assert parts_count == 4, f"Expected address length: 4, got {parts_count}"
+        for part in parts:
+            buffer += struct.pack(">B", (~(int(part))) & 0xff)
+        buffer += struct.pack(">H", port)
+        return buffer
+    else:
+        raise Exception(f"Unknown address version {version}")
 
 def read_unconnected_ping(data):
     unconnected_ping["id"] = data[0]
