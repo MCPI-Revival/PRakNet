@@ -220,6 +220,16 @@ def write_open_connection_request_1():
     for i in range(0, open_connection_request_1["mtu_size"] - len(buffer)):
         buffer += b"\x00"
     return buffer
+
+def read_open_connection_reply_1(data):
+    open_connection_reply_1["id"] = data[0]
+    open_connection_reply_1["magic"] = data[1:1 + 16]
+    open_connection_reply_1["server_guid"] = struct.unpack(">Q", data[17:17 + 8])[0]
+    open_connection_reply_1["use_security"] = struct.unpack(">B", data[25:25 + 1])[0]
+    open_connection_reply_1["mtu_size"] = struct.unpack(">H", data[26:26 + 2])[0]
+    
+def write_open_connection_reply_1():
+    buffer = b""
         
 def read_open_connection_request_2(data):
     open_connection_request_2["id"] = data[0]
@@ -237,13 +247,6 @@ def write_open_connection_request_2():
     buffer += struct.pack(">H", open_connection_request_2["mtu_size"])
     buffer += struct.pack(">Q", open_connection_request_2["client_guid"])
     return buffer
-
-def read_open_connection_reply_1(data):
-    open_connection_reply_1["id"] = data[0]
-    open_connection_reply_1["magic"] = data[1:1 + 16]
-    open_connection_reply_1["server_guid"] = struct.unpack(">Q", data[17:17 + 8])[0]
-    open_connection_reply_1["use_security"] = struct.unpack(">B", data[25:25 + 1])[0]
-    open_connection_reply_1["mtu_size"] = struct.unpack(">H", data[26:26 + 2])[0]
     
 def read_nack(data):
     nack["id"] = data[0]
