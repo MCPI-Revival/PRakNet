@@ -1,6 +1,8 @@
+import os
 from praknet import handler
 from praknet import messages
 from praknet import socket
+import struct
 
 options = {
     "name": "",
@@ -9,6 +11,8 @@ options = {
     "custom_handler": lambda data, addr, socket: 0,
     "custom_packets": [0x84]
 }
+
+server_guid = struct.unpack(">Q", os.urandom(8))
 
 def set_option(option, value):
     options[option] = value
