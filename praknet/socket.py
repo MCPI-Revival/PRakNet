@@ -5,7 +5,7 @@ socket = s.socket(s.AF_INET, s.SOCK_DGRAM, s.SOL_UDP)
 def create_socket(address):
     try:
         socket.bind(address)
-    except socket.error as e:
+    except s.error as e:
         print("Failed to bind!")
         print(str(e))
     else:
