@@ -20,6 +20,8 @@ def packet_handler(data, address):
     id = data[0]
     if id == messages.ID_UNCONNECTED_PING:
         socket.send_buffer(handler.handle_unconnected_ping(data), address)
+    elif id == messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
+        socket.send_buffer(handler.handle_unconnected_ping_open_connections(data), address)
 
 def run():
     socket.create_socket((options["ip"], options["port"]))
