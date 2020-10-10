@@ -104,16 +104,16 @@ advertise_system = {
 
 nack = {
     "id": messages.ID_NACK,
-    "count",
-    "is_range",
+    "count": None,
+    "is_range": None,
     "no_range": {"index": None}
     "range": {"start_index": None, "end_index": None}
 }
 
 ack = {
     "id": messages.ID_ACK,
-    "count",
-    "is_range",
+    "count": None,
+    "is_range": None,
     "no_range": {"index": None}
     "range": {"start_index": None, "end_index": None}
 }
@@ -170,3 +170,13 @@ def write_unconnected_pong():
     buffer += struct.pack(">H", len(unconnected_pong["data"]))
     buffer += unconnected_pong["data"].encode()
     return buffer
+
+def read_ack(data):
+    ack["id"] = data[0]
+    ack["count"] = struct.unpack(">H", data[1:1 + 2])[0]
+    ack["is_range"] = data[3:3 + 1]
+    if ack["is_range"] == 0:
+        ack["range"]["start_index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
+        ack["range"]["end_index"] = struct.unpack('<L', data[7:7 + 3] + b'\x00')[0]
+    else:
+        ack["no_range"]["index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
