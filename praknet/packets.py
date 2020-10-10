@@ -206,6 +206,12 @@ def write_unconnected_pong():
     buffer += unconnected_pong["data"].encode()
     return buffer
 
+def read_open_connection_request_1(data):
+    open_connection_request_1["id"] = data[0]
+    open_connection_request_1["magic"] = data[1:1 + 16]
+    open_connection_request_1["protocol_version"] = struct.unpack(">B", data[17:17 + 1])[0]
+    open_connection_request_1["mtu_size"] = struct.unpack(">H", data[18:18 + 2])
+
 def read_nack(data):
     nack["id"] = data[0]
     nack["count"] = struct.unpack(">H", data[1:1 + 2])[0]
