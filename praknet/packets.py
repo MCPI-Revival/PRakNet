@@ -102,6 +102,22 @@ advertise_system = {
     "data": None
 }
 
+nack = {
+    "id": messages.ID_NACK,
+    "count",
+    "is_range",
+    "no_range": {"index": None}
+    "range": {"start_index": None, "end_index": None}
+}
+
+ack = {
+    "id": messages.ID_ACK,
+    "count",
+    "is_range",
+    "no_range": {"index": None}
+    "range": {"start_index": None, "end_index": None}
+}
+
 encapsulated = {
     "iteration": None,
     "encapsulation": None,
