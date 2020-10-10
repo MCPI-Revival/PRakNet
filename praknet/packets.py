@@ -230,6 +230,12 @@ def read_open_connection_reply_1(data):
     
 def write_open_connection_reply_1():
     buffer = b""
+    buffer += struct.pack(">B", open_connection_reply_1["id"])
+    buffer += open_connection_reply_1["magic"]
+    buffer += struct.pack(">Q", open_connection_reply_1["server_guid"])
+    buffer += struct.pack(">B", open_connection_reply_1["use_security"])
+    buffer += struct.pack(">H", open_connection_reply_1["mtu_size"])
+    return buffer
         
 def read_open_connection_request_2(data):
     open_connection_request_2["id"] = data[0]
