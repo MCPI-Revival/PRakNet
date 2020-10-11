@@ -104,18 +104,12 @@ advertise_system = {
 
 nack = {
     "id": messages.ID_NACK,
-    "count": None,
-    "is_range": None,
-    "no_range": {"index": None},
-    "range": {"start_index": None, "end_index": None}
+    "packets": [],
 }
 
 ack = {
     "id": messages.ID_ACK,
-    "count": None,
-    "is_range": None,
-    "no_range": {"index": None},
-    "range": {"start_index": None, "end_index": None}
+    "packets": []
 }
 
 encapsulated = {
@@ -297,13 +291,25 @@ def write_nack():
 
 def read_ack(data):
     ack["id"] = data[0]
-    ack["count"] = struct.unpack(">H", data[1:1 + 2])[0]
-    ack["is_range"] = struct.unpack(">B", data[3:3 + 1])
-    if ack["is_range"] == 0:
-        ack["range"]["start_index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
-        ack["range"]["end_index"] = struct.unpack('<L', data[7:7 + 3] + b'\x00')[0]
-    else:
-        ack["no_range"]["index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
+    count = struct.unpack(">H", data[1:1 + 2])[0]
+    offset = 3
+    for i in range(0, count):
+        range = struct.unpack(">B", data[offset:offset + 1])
+        offset += 1
+        if range == 0:
+            start_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+            offset += 3
+            end_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+            offset += 3
+            index = start_index
+            while index <= end_index:
+                ack["packets"].append(index)
+                if len(ack["packets"]) > 4096:
+                    raise Exception("Max acknowledgement packet count exceed")
+        else:
+            index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+            offset += 3
+            ack["packets"].append(index)
 
 def write_ack():
     buffer = b""
