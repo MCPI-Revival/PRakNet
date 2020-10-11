@@ -24,3 +24,12 @@ def handle_open_connection_request_1(data):
     packets.open_connection_reply_1["use_security"] = 0
     packets.open_connection_reply_1["mtu_size"] = packets.open_connection_request_1["mtu_size"]
     return packets.write_open_connection_reply_1()
+
+def handle_open_connection_request_2(data, client_address):
+    packets.read_open_connection_request_2(data)
+    packets.open_connection_reply_2["magic"] = packets.open_connection_request_2["magic"]
+    packets.open_connection_reply_2["server_guid"] = server.options["server_guid"]
+    packets.open_connection_reply_2["client_address"] = client_address
+    packets.open_connection_reply_2["mtu_size"] = packets.open_connection_request_2["mtu_size"]
+    packets.open_connection_reply_2["use_security"] = 0
+    return packets.write_open_connection_reply_2()
