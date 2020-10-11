@@ -13,6 +13,24 @@ options = {
     "custom_packets": [0x84]
 }
 
+connections = {}
+
+def add_connection(addr, port):
+    token = str(addr) + ":" + str(port)
+    connections[token] = {}
+
+def remove_connection(addr, port):
+    token = str(addr) + ":" + str(port)
+    if token in connections:
+        del connections[token]
+
+def get_connection(addr, port):
+    token = str(addr) + ":" + str(port)
+    if token in connections:
+        return connections[token]
+    else:
+        return None
+
 def set_option(option, value):
     options[option] = value
 
