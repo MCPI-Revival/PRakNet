@@ -40,6 +40,10 @@ def packet_handler(data, address):
         socket.send_buffer(handler.handle_unconnected_ping(data), address)
     elif id == messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
         socket.send_buffer(handler.handle_unconnected_ping_open_connections(data), address)
+    elif id == messages.ID_OPEN_CONNECTION_REQUEST_1:
+        socket.send_buffer(handler.handle_open_connection_request_1(data), address)
+    elif id == messages.ID_OPEN_CONNECTION_REQUEST_2:
+        socket.send_buffer(handler.handle_open_connection_request_2(data, (address[0], address[1], 4)), address)
 
 def run():
     socket.create_socket((options["ip"], options["port"]))
