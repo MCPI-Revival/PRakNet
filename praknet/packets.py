@@ -291,6 +291,7 @@ def write_nack():
 
 def read_ack(data):
     ack["id"] = data[0]
+    ack["packets"] = []
     count = struct.unpack(">H", data[1:1 + 2])[0]
     offset = 3
     for i in range(0, count):
@@ -314,11 +315,36 @@ def read_ack(data):
 def write_ack():
     buffer = b""
     buffer += struct.pack(">B", ack["id"])
-    buffer += struct.pack(">H", ack["count"])
-    buffer += struct.pack(">B", ack["is_range"])
-    if ack["is_range"] == 0:
-        buffer += struct.pack("<L", ack["range"]["start_index"])[0:-1]
-        buffer += struct.pack("<L", ack["range"]["end_index"])[0:-1]
-    else:
-        buffer += struct.pack("<L", ack["no_range"]["index"])[0:-1]
+    records = 0
+    ack["packets"].sorted()
+    if len(ack["packets"]) > 0:
+        pointer = 1
+        start_index = ack["packets"][0]
+        end_index = ack["packets"][0]
+        while pointer < len(ack["packets"]):
+            index = ack["packets"][pointer]
+            pointer += 1
+            diff = index - end_index
+            if diff == 1:
+                end_index = index
+            elif diff > 1:
+                if start_index == end_index:
+                    buffer += struct.pack(">B", 1)
+                    buffer += struct.pack("<L", start_index)[0:-1]
+                    start_index = end_index = index
+                else:
+                    buffer += struct.pack(">B", 0)
+                    buffer += struct.pack("<L", start_index)[0:-1]
+                    buffer += struct.pack("<L", end_index)[0:-1]
+                    start_index = end_index = index
+                records += 1
+        if start_index == last_index:
+            buffer += struct.pack(">B", 1)
+            buffer += struct.pack("<L", start_index)[0:-1]
+        else:
+            buffer += struct.pack(">B", 0)
+            buffer += struct.pack("<L", start_index)[0:-1]
+            buffer += struct.pack("<L", end_index)[0:-1]
+        records += 1
+    buffer = struct.pack(">H", records) + buffer
     return buffer
