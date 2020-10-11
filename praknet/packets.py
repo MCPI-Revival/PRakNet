@@ -324,7 +324,7 @@ def write_nack():
             buffer += struct.pack("<L", start_index)[0:-1]
             buffer += struct.pack("<L", end_index)[0:-1]
         records += 1
-    buffer = struct.pack(">H", records) + buffer
+    buffer = buffer[0:1] + struct.pack(">H", records) + buffer[1:]
     return buffer
 
 def read_ack(data):
@@ -384,5 +384,5 @@ def write_ack():
             buffer += struct.pack("<L", start_index)[0:-1]
             buffer += struct.pack("<L", end_index)[0:-1]
         records += 1
-    buffer = struct.pack(">H", records) + buffer
+    buffer = buffer[0:1] + struct.pack(">H", records) + buffer[1:]
     return buffer
