@@ -32,4 +32,5 @@ def handle_open_connection_request_2(data, client_address):
     packets.open_connection_reply_2["client_address"] = client_address
     packets.open_connection_reply_2["mtu_size"] = packets.open_connection_request_2["mtu_size"]
     packets.open_connection_reply_2["use_security"] = 0
+    server.add_connection(client_address[0], client_address[1])
     return packets.write_open_connection_reply_2()
