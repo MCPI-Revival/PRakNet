@@ -269,24 +269,62 @@ def write_open_connection_reply_2():
     
 def read_nack(data):
     nack["id"] = data[0]
-    nack["count"] = struct.unpack(">H", data[1:1 + 2])[0]
-    nack["is_range"] = struct.unpack(">B", data[3:3 + 1])
-    if nack["is_range"] == 0:
-        nack["range"]["start_index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
-        nack["range"]["end_index"] = struct.unpack('<L', data[7:7 + 3] + b'\x00')[0]
-    else:
-        nack["no_range"]["index"] = struct.unpack('<L', data[4:4 + 3] + b'\x00')[0]
+    nack["packets"] = []
+    count = struct.unpack(">H", data[1:1 + 2])[0]
+    offset = 3
+    for i in range(0, count):
+        range = struct.unpack(">B", data[offset:offset + 1])
+        offset += 1
+        if range == 0:
+            start_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+            offset += 3
+            end_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+            offset += 3
+            index = start_index
+            while index <= end_index:
+                nack["packets"].append(index)
+                if len(nack["packets"]) > 4096:
+                    raise Exception("Max acknowledgement packet count exceed")
+        else:
+            index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+            offset += 3
+            nack["packets"].append(index)
 
 def write_nack():
     buffer = b""
     buffer += struct.pack(">B", nack["id"])
-    buffer += struct.pack(">H", nack["count"])
-    buffer += struct.pack(">B", nack["is_range"])
-    if nack["is_range"] == 0:
-        buffer += struct.pack("<L", nack["range"]["start_index"])[0:-1]
-        buffer += struct.pack("<L", nack["range"]["end_index"])[0:-1]
-    else:
-        buffer += struct.pack("<L", nack["no_range"]["index"])[0:-1]
+    records = 0
+    nack["packets"].sorted()
+    if len(nack["packets"]) > 0:
+        pointer = 1
+        start_index = nack["packets"][0]
+        end_index = nack["packets"][0]
+        while pointer < len(nack["packets"]):
+            index = nack["packets"][pointer]
+            pointer += 1
+            diff = index - end_index
+            if diff == 1:
+                end_index = index
+            elif diff > 1:
+                if start_index == end_index:
+                    buffer += struct.pack(">B", 1)
+                    buffer += struct.pack("<L", start_index)[0:-1]
+                    start_index = end_index = index
+                else:
+                    buffer += struct.pack(">B", 0)
+                    buffer += struct.pack("<L", start_index)[0:-1]
+                    buffer += struct.pack("<L", end_index)[0:-1]
+                    start_index = end_index = index
+                records += 1
+        if start_index == last_index:
+            buffer += struct.pack(">B", 1)
+            buffer += struct.pack("<L", start_index)[0:-1]
+        else:
+            buffer += struct.pack(">B", 0)
+            buffer += struct.pack("<L", start_index)[0:-1]
+            buffer += struct.pack("<L", end_index)[0:-1]
+        records += 1
+    buffer = struct.pack(">H", records) + buffer
     return buffer
 
 def read_ack(data):
