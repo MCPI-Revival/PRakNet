@@ -55,7 +55,7 @@ open_connection_reply_2 = {
     "server_guid": None,
     "client_address": None,
     "mtu_size": None,
-    "encryption_enabled": None
+    "use_security": None
 }
 
 connection_request = {
@@ -252,6 +252,24 @@ def write_open_connection_request_2():
     buffer += write_address(server_address[0], server_address[1], server_address[2])
     buffer += struct.pack(">H", open_connection_request_2["mtu_size"])
     buffer += struct.pack(">Q", open_connection_request_2["client_guid"])
+    return buffer
+
+def read_open_connection_reply_2(data):
+    open_connection_reply_2["id"] = data[0]
+    open_connection_reply_2["magic"] = data[1:1 + 16]
+    open_connection_reply_2["server_guid"] = struct.unpack(">Q", data[17:17 + 8])[0]
+    open_connection_reply_2["client_address"] = read_address(data[25:25 + 7])
+    open_connection_reply_2["mtu_size"] = struct.unpack(">H", data[32:32 + 2])[0]
+    open_connection_reply_2["use_security"] = struct.unpack(">B", data[34:34 + 1])[0]
+    
+def write_open_connection_reply_2():
+    buffer = b""
+    buffer += struct.pack(">B", open_connection_reply_2["id"])
+    buffer += open_connection_reply_2["magic"]
+    buffer += struct.pack(">Q", open_connection_reply_2["server_guid"])
+    buffer += write_address(open_connection_reply_2["client_address"])
+    buffer += struct.pack(">H", open_connection_reply_2["mtu_size"])
+    buffer += struct.pack(">B", open_connection_reply_2["use_security"])
     return buffer
     
 def read_nack(data):
