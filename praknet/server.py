@@ -9,8 +9,7 @@ options = {
     "ip": "0.0.0.0",
     "port": 19132,
     "server_guid": struct.unpack(">Q", os.urandom(8))[0],
-    "custom_handler": lambda data, addr, socket: 0,
-    "custom_packets": [0x84]
+    "custom_handler": lambda data, addr: 0
 }
 
 status = {
@@ -61,3 +60,4 @@ def run():
         if recv != None:
             data, addr = recv
             packet_handler(data, addr)
+            options["custom_handler"](data, addr)
