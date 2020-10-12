@@ -14,10 +14,10 @@ options = {
 }
 
 status = {
-    "Connecting": 0,
-    "Connected": 1,
-    "Disconnecting": 2,
-    "Disconnected": 3
+    "connecting": 0,
+    "connected": 1,
+    "disconnecting": 2,
+    "disconnected": 3
 }
 
 connections = {}
@@ -25,7 +25,7 @@ connections = {}
 def add_connection(addr, port):
     token = str(addr) + ":" + str(port)
     connections[token] = {
-        "connection_state": status["Connecting"]
+        "connection_state": status["connecting"]
     }
 
 def remove_connection(addr, port):
