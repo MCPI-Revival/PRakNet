@@ -13,11 +13,20 @@ options = {
     "custom_packets": [0x84]
 }
 
+status = {
+    "Connecting": 0,
+    "Connected": 1,
+    "Disconnecting": 2,
+    "Disconnected": 3
+}
+
 connections = {}
 
 def add_connection(addr, port):
     token = str(addr) + ":" + str(port)
-    connections[token] = {}
+    connections[token] = {
+        "connection_state": status["Connecting"]
+    }
 
 def remove_connection(addr, port):
     token = str(addr) + ":" + str(port)
