@@ -285,6 +285,7 @@ def read_nack(data):
                 nack["packets"].append(index)
                 if len(nack["packets"]) > 4096:
                     raise Exception("Max acknowledgement packet count exceed")
+                index += 1
         else:
             index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
             offset += 3
@@ -345,6 +346,7 @@ def read_ack(data):
                 ack["packets"].append(index)
                 if len(ack["packets"]) > 4096:
                     raise Exception("Max acknowledgement packet count exceed")
+                index += 1
         else:
             index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
             offset += 3
