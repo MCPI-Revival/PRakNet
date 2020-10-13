@@ -200,6 +200,18 @@ def read_unconnected_pong(data):
     unconnected_pong["magic"] = data[17:17 + 16]
     unconnected_pong["data"] = data[35:35 + struct.unpack(">H", data[33:33 + 2])[0]].decode()
     
+def read_connected_pong(data);
+    connected_ping["id"] = data[0]
+    connected_ping["ping_time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    connected_ping["pong_time"] = struct.unpack(">Q", data[9:9 + 8])[0]
+
+def write_connected_pong():
+    buffer = b""
+    buffer += struct.pack(">B", connected_pong["id"])
+    buffer += struct.pack(">Q", connected_pong["ping_time"])
+    buffer += struct.pack(">Q", connected_pong["pong_time"])
+    return buffer
+
 def write_unconnected_pong():
     buffer = b""
     buffer += struct.pack(">B", unconnected_pong["id"])
