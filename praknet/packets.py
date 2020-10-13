@@ -149,6 +149,16 @@ def write_address(address):
     else:
         raise Exception(f"Unknown address version {version}")
 
+def read_connected_ping(data);
+    connected_ping["id"] = data[0]
+    onnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+
+def write_connected_ping():
+    buffer = b""
+    buffer += struct.pack(">B", connected_ping["id"])
+    buffer += struct.pack(">Q", connected_ping["time"])
+    return buffer
+
 def read_unconnected_ping(data):
     unconnected_ping["id"] = data[0]
     unconnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
@@ -174,7 +184,6 @@ def read_unconnected_ping_open_connections(data):
         unconnected_ping_open_connections["client_guid"] = struct.unpack(">Q", data[25:25 + 8])[0]
     except:
         unconnected_ping_open_connections["client_guid"] = 12345678
-    
     
 def write_unconnected_ping_open_connections():
     buffer = b""
