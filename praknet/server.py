@@ -47,7 +47,8 @@ def packet_handler(data, address):
     connection = get_connection(address[0], address[1])
     if connection != None:
         if id < 0x80:
-           pass
+           if id == messages.ID_CONNECTION_REQUEST:
+               socket.send_buffer(handler.handle_connection_request(data, (address[0], address[1], 4)), address)
     elif id == messages.ID_UNCONNECTED_PING:
         socket.send_buffer(handler.handle_unconnected_ping(data), address)
     elif id == messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
