@@ -44,7 +44,11 @@ def set_option(option, value):
 
 def packet_handler(data, address):
     id = data[0]
-    if id == messages.ID_UNCONNECTED_PING:
+    connection = get_connection(address[0], address[1])
+    if connection != None:
+        if id < 0x80:
+           pass
+    elif id == messages.ID_UNCONNECTED_PING:
         socket.send_buffer(handler.handle_unconnected_ping(data), address)
     elif id == messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
         socket.send_buffer(handler.handle_unconnected_ping_open_connections(data), address)
