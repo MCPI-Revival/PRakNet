@@ -285,11 +285,18 @@ def write_connection_request():
     buffer += struct.pack(">B", connection_request["use_security"])
     return buffer
 
-"""def read_connection_request_accepted(data):
+def read_connection_request_accepted(data):
     connection_request_accepted["id"] = data[0]
-    connection_request_accepted["client_guid"] = struct.unpack(">Q", data[1:1 + 8])[0]
-    connection_request_accepted["request_time"] = struct.unpack(">Q", data[9:9 + 8])[0]
-    connection_request_accepted["use_security"] = struct.unpack(">B", data[17:17 + 1])[0]"""
+    connection_request_accepted["client_address"] = read_address(data[1:1 + 7])
+    connection_request_accepted["system_index"] = struct.unpack(">B", data[8:8 + 1])[0]
+    offset = 9
+    for in in range(0, 20):
+        connection_request_accepted["system_addresses"].append(read_address(data[offset:offset + 7]))
+        offset += 7
+    connection_request_accepted["request_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
+    offset += 8
+    connection_request_accepted["time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
+    offset += 8
 
 def write_connection_request_accepted():
     buffer = b""
