@@ -290,7 +290,7 @@ def read_connection_request_accepted(data):
     connection_request_accepted["client_address"] = read_address(data[1:1 + 7])
     connection_request_accepted["system_index"] = struct.unpack(">B", data[8:8 + 1])[0]
     offset = 9
-    for in in range(0, 20):
+    for i in range(0, 20):
         connection_request_accepted["system_addresses"].append(read_address(data[offset:offset + 7]))
         offset += 7
     connection_request_accepted["request_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
