@@ -1,5 +1,6 @@
 from praknet import packets
 from praknet import server
+from time import time as time_now
 
 def handle_unconnected_ping(data):
     packets.read_unconnected_ping(data)
@@ -34,3 +35,16 @@ def handle_open_connection_request_2(data, client_address):
     packets.open_connection_reply_2["use_security"] = 0
     server.add_connection(client_address[0], client_address[1])
     return packets.write_open_connection_reply_2()
+
+def handle_connection_request(data, client_address):
+    packets.read_encapsulated(data)
+    packets.read_connection_request(packets.encapsulated["data_packet"])
+    packets.connection_request_accepted["client_address"] = client_address
+    packets.connection_request_accepted["system_index"] = 0
+    packets.connection_request_accepted["system_addresses"] = []
+    for i in range(0, 20):
+        packets.connection_request_accepted["system_addresses"].append(("127.0.0.1", 19132, 4))
+    packets.connection_request_accepted["request_time"] = packets.connection_request["request_time"]
+    packets.connection_request_accepted["time"] = int(time_now())
+    packets.encapsulated["data_packet"] = packets.write_connection_request_accepted()
+    return packets.write_encapsulated()
