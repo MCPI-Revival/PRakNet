@@ -309,6 +309,28 @@ def write_connection_request_accepted():
     buffer += struct.pack(">Q", connection_request_accepted["time"])
     return buffer
 
+def read_new_connection(data):
+    new_connection["id"] = data[0]
+    new_connection["address"] = read_address(data[1:1 + 7])
+    offset = 8
+    for i in range(0, 20):
+        new_connection["system_addresses"].append(read_address(data[offset:offset + 7]))
+        offset += 7
+    new_connection["ping_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
+    offset += 8
+    new_connection["pong_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
+    offset += 8
+
+def write_new_connection():
+    buffer = b""
+    buffer += struct.pack(">B", new_connection["id"])
+    buffer += write_address(new_connection["address"])
+    for i in range(0, 20):
+        buffer += write_address(new_connection["system_addresses"][i])
+    buffer += struct.pack(">Q", new_connection["ping_time"])
+    buffer += struct.pack(">Q", new_connection["pong_time"])
+    return buffer
+
 def read_unconnected_pong(data):
     unconnected_pong["id"] = data[0]
     unconnected_pong["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
