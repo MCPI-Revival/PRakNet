@@ -149,7 +149,7 @@ def write_address(address):
     else:
         raise Exception(f"Unknown address version {version}")
 
-def read_connected_ping(data);
+def read_connected_ping(data):
     connected_ping["id"] = data[0]
     onnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
 
