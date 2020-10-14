@@ -468,3 +468,19 @@ def write_ack():
         records += 1
     buffer = buffer[0:1] + struct.pack(">H", records) + buffer[1:]
     return buffer
+
+def read_encapsulated(data):
+    encapsulated["iteration"] = data[1]
+    encapsulated["encapsulation"] = data[4]
+    encapsulated["length"] = strict.unpack(">H", data[5:5 + 2])[0] >> 3
+    if encapsulated["encapsulation"] == 0x00:
+        encapsulated["data_packet"] = data[7:]
+    elif encapsulated["encapsulation"] == 0x40:
+        encapsulated["data_packet"] = data[10:]
+    elif encapsulated["encapsulation"] == 0x60:
+        encapsulated["data_packet"] = data[14:]
+    else:
+        encapsulated["iteration"] = None
+        encapsulated["encapsulation"] = None
+        encapsulated["length"] = None
+        encapsulated["data_packet"] = None
