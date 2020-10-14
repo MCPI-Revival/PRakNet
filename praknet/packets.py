@@ -193,13 +193,6 @@ def write_unconnected_ping_open_connections():
     buffer += struct.pack(">Q", unconnected_ping_open_connections["client_guid"])
     return buffer
 
-def read_unconnected_pong(data):
-    unconnected_pong["id"] = data[0]
-    unconnected_pong["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
-    unconnected_pong["server_guid"] = struct.unpack(">Q", data[9:9 + 8])
-    unconnected_pong["magic"] = data[17:17 + 16]
-    unconnected_pong["data"] = data[35:35 + struct.unpack(">H", data[33:33 + 2])[0]].decode()
-    
 def read_connected_pong(data);
     connected_ping["id"] = data[0]
     connected_ping["ping_time"] = struct.unpack(">Q", data[1:1 + 8])[0]
@@ -210,16 +203,6 @@ def write_connected_pong():
     buffer += struct.pack(">B", connected_pong["id"])
     buffer += struct.pack(">Q", connected_pong["ping_time"])
     buffer += struct.pack(">Q", connected_pong["pong_time"])
-    return buffer
-
-def write_unconnected_pong():
-    buffer = b""
-    buffer += struct.pack(">B", unconnected_pong["id"])
-    buffer += struct.pack(">Q", unconnected_pong["time"])
-    buffer += struct.pack(">Q", unconnected_pong["server_guid"])
-    buffer += unconnected_pong["magic"]
-    buffer += struct.pack(">H", len(unconnected_pong["data"]))
-    buffer += unconnected_pong["data"].encode()
     return buffer
 
 def read_open_connection_request_1(data):
@@ -286,6 +269,23 @@ def write_open_connection_reply_2():
     buffer += write_address(open_connection_reply_2["client_address"])
     buffer += struct.pack(">H", open_connection_reply_2["mtu_size"])
     buffer += struct.pack(">B", open_connection_reply_2["use_security"])
+    return buffer
+
+def read_unconnected_pong(data):
+    unconnected_pong["id"] = data[0]
+    unconnected_pong["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    unconnected_pong["server_guid"] = struct.unpack(">Q", data[9:9 + 8])
+    unconnected_pong["magic"] = data[17:17 + 16]
+    unconnected_pong["data"] = data[35:35 + struct.unpack(">H", data[33:33 + 2])[0]].decode()
+
+def write_unconnected_pong():
+    buffer = b""
+    buffer += struct.pack(">B", unconnected_pong["id"])
+    buffer += struct.pack(">Q", unconnected_pong["time"])
+    buffer += struct.pack(">Q", unconnected_pong["server_guid"])
+    buffer += unconnected_pong["magic"]
+    buffer += struct.pack(">H", len(unconnected_pong["data"]))
+    buffer += unconnected_pong["data"].encode()
     return buffer
     
 def read_nack(data):
