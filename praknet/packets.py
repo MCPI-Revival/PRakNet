@@ -271,6 +271,20 @@ def write_open_connection_reply_2():
     buffer += struct.pack(">B", open_connection_reply_2["use_security"])
     return buffer
 
+def read_connection_request(data):
+    connection_request["id"] = data[0]
+    connection_request["client_guid"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    connection_request["request_time"] = struct.unpack(">Q", data[9:9 + 8])[0]
+    connection_request["use_security"] = struct.unpack(">B", data[17:17 + 1])[0]
+
+def write_connection_request():
+    buffer = b""
+    buffer += struct.pack(">B", connection_request["id"])
+    buffer += struct.pack(">Q", connection_request["client_guid"])
+    buffer += struct.pack(">Q", connection_request["request_time"])
+    buffer += struct.pack(">B", connection_request["use_security"])
+    return buffer
+
 def read_unconnected_pong(data):
     unconnected_pong["id"] = data[0]
     unconnected_pong["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
