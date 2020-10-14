@@ -192,7 +192,7 @@ def write_unconnected_ping_open_connections():
     buffer += struct.pack(">Q", unconnected_ping_open_connections["client_guid"])
     return buffer
 
-def read_connected_pong(data);
+def read_connected_pong(data):
     connected_ping["id"] = data[0]
     connected_ping["ping_time"] = struct.unpack(">Q", data[1:1 + 8])[0]
     connected_ping["pong_time"] = struct.unpack(">Q", data[9:9 + 8])[0]
