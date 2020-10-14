@@ -116,8 +116,7 @@ encapsulated = {
     "iteration": None,
     "encapsulation": None,
     "length": None,
-    "id": None,
-    "data": None
+    "data_packet": None
 }
 
 def read_address(data):
