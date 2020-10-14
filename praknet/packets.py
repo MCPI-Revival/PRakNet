@@ -484,3 +484,18 @@ def read_encapsulated(data):
         encapsulated["encapsulation"] = None
         encapsulated["length"] = None
         encapsulated["data_packet"] = None
+
+def write_encapsulated():
+    buffer = b""
+    buffer += b"\x84"
+    buffer += struct.pack(">B", encapsulated["iteration"])
+    buffer += b"\x00\x00"
+    buffer += struct.pack(">B", encapsulated["encapsulation"])
+    buffer += struct.pack(">H", len(encapsulated["data_packet"]) << 3)
+    if encapsulated["encapsulation"] == 0x00:
+        buffer += encapsulated["data_packet"]
+    elif encapsulated["encapsulation"] == 0x40:
+        buffer += b"\x00\x00\x00" + encapsulated["data_packet"]
+    elif encapsulated["encapsulation"] == 0x60:
+        buffer += b"\x00\x00\x00\x00\x00\x00\x00" + encapsulated["data_packet"]
+    return buffer
