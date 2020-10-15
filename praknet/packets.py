@@ -472,7 +472,7 @@ def write_ack():
 def read_encapsulated(data):
     encapsulated["iteration"] = data[1]
     encapsulated["encapsulation"] = data[4]
-    encapsulated["length"] = strict.unpack(">H", data[5:5 + 2])[0] >> 3
+    encapsulated["length"] = struct.unpack(">H", data[5:5 + 2])[0] >> 3
     if encapsulated["encapsulation"] == 0x00:
         encapsulated["data_packet"] = data[7:]
     elif encapsulated["encapsulation"] == 0x40:
