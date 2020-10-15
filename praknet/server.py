@@ -46,13 +46,16 @@ def packet_handler(data, address):
     id = data[0]
     connection = get_connection(address[0], address[1])
     if connection != None:
-        if data[4] == 0x00:
-            datapacket_id = data[7]
-        elif data[4] == 0x40:
-            datapacket_id = data[10]
-        elif data[4] == 0x60:
-            datapacket_id = data[14]
-        else:
+        try:
+            if data[4] == 0x00:
+                datapacket_id = data[7]
+            elif data[4] == 0x40:
+                datapacket_id = data[10]
+            elif data[4] == 0x60:
+                datapacket_id = data[14]
+            else:
+                datapacket_id = -1
+        except:
             datapacket_id = -1
         if datapacket_id < 0x80:
            if datapacket_id == messages.ID_CONNECTION_REQUEST:
