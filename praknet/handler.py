@@ -48,3 +48,11 @@ def handle_connection_request(data, client_address):
     packets.connection_request_accepted["time"] = int(time_now())
     packets.encapsulated["data_packet"] = packets.write_connection_request_accepted()
     return packets.write_encapsulated()
+
+def handle_connected_ping(data):
+    packets.read_encapsulated(data)
+    packets.read_connected_ping(packets.encapsulated["data_packet"])
+    packets.connected_pong["ping_time"] = packets.connected_ping["time"]
+    packets.connected_pong["pong_time"] = int(time_now())
+    packets.encapsulated["data_packet"] = packets.write_connected_pong()
+    return packets.write_encapsulated()
