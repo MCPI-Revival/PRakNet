@@ -24,7 +24,8 @@ connections = {}
 def add_connection(addr, port):
     token = str(addr) + ":" + str(port)
     connections[token] = {
-        "connection_state": status["connecting"]
+        "connecton_state": status["connecting"],
+        "packets_queue": []
     }
 
 def remove_connection(addr, port):
@@ -42,26 +43,45 @@ def get_connection(addr, port):
 def set_option(option, value):
     options[option] = value
 
+def add_to_queue(data, address):
+    connection = get_connection(address[0], address[1])
+    connection["packets_queue"].append(data)
+
+def get_last_packet(address):
+    connection = get_connection(address[0], address[1])
+    queue = connection["packets_queue"]
+    if queue > 0:
+        return queue[-1]
+    else:
+        return b""
+
 def packet_handler(data, address):
     id = data[0]
     connection = get_connection(address[0], address[1])
     if connection != None:
-        try:
-            if data[4] == 0x00:
-                datapacket_id = data[7]
-            elif data[4] == 0x40:
-                datapacket_id = data[10]
-            elif data[4] == 0x60:
-                datapacket_id = data[14]
-            else:
+        if id == messages.ID_ACK:
+            socket.send_buffer(get_last_packet(address), address)
+        else:
+            try:
+                if data[4] == 0x00:
+                    datapacket_id = data[7]
+                elif data[4] == 0x40:
+                    datapacket_id = data[10]
+                elif data[4] == 0x60:
+                    datapacket_id = data[14]
+                else:
+                    datapacket_id = -1
+            except:
                 datapacket_id = -1
-        except:
-            datapacket_id = -1
-        if datapacket_id < 0x80:
-           if datapacket_id == messages.ID_CONNECTION_REQUEST:
-               socket.send_buffer(handler.handle_connection_request(data, (address[0], address[1], 4)), address)
-           elif datapacket_id == messages.ID_CONNECTED_PING:
-               socket.send_buffer(handler.handle_connected_ping(data), address)
+            if datapacket_id < 0x80:
+                if datapacket_id == messages.ID_CONNECTION_REQUEST:
+                    buffer = handler.handle_connection_request(data, (address[0], address[1], 4))
+                    socket.send_buffer(buffer, address)
+                    add_to_queue(buffer, address)
+                elif datapacket_id == messages.ID_CONNECTED_PING:
+                    buffer = handler.handle_connected_ping(data)
+                    socket.send_buffer(buffer, address)
+                    add_to_queue(buffer, address)
     elif id == messages.ID_UNCONNECTED_PING:
         socket.send_buffer(handler.handle_unconnected_ping(data), address)
     elif id == messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
