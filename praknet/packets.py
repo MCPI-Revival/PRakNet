@@ -150,7 +150,7 @@ def write_address(address):
 
 def read_connected_ping(data):
     connected_ping["id"] = data[0]
-    onnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    connected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
 
 def write_connected_ping():
     buffer = b""

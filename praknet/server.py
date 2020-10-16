@@ -50,7 +50,7 @@ def add_to_queue(data, address):
 def get_last_packet(address):
     connection = get_connection(address[0], address[1])
     queue = connection["packets_queue"]
-    if queue > 0:
+    if len(queue) > 0:
         return queue[-1]
     else:
         return b""
