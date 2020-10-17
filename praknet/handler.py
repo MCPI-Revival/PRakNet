@@ -37,6 +37,7 @@ def handle_open_connection_request_2(data, client_address):
     return packets.write_open_connection_reply_2()
 
 def handle_connection_request(data, client_address):
+    connection = server.get_connection(client_address[0], client_address[1])
     packets.read_encapsulated(data)
     packets.read_connection_request(packets.encapsulated["data_packet"])
     packets.connection_request_accepted["client_address"] = client_address
@@ -46,13 +47,18 @@ def handle_connection_request(data, client_address):
         packets.connection_request_accepted["system_addresses"].append(("127.0.0.1", 19132, 4))
     packets.connection_request_accepted["request_time"] = packets.connection_request["request_time"]
     packets.connection_request_accepted["time"] = int(time_now())
+    packets.encapsulated["iteration"] = connection["iteration"]
+    packets.encapsulated["encapsulation"] = 0x00
     packets.encapsulated["data_packet"] = packets.write_connection_request_accepted()
     return packets.write_encapsulated()
 
-def handle_connected_ping(data):
+def handle_connected_ping(data, client_address):
+    connection = server.get_connection(client_address[0], client_address[1])
     packets.read_encapsulated(data)
     packets.read_connected_ping(packets.encapsulated["data_packet"])
     packets.connected_pong["ping_time"] = packets.connected_ping["time"]
     packets.connected_pong["pong_time"] = int(time_now())
+    packets.encapsulated["iteration"] = connection["iteration"]
+    packets.encapsulated["encapsulation"] = 0x00
     packets.encapsulated["data_packet"] = packets.write_connected_pong()
     return packets.write_encapsulated()
