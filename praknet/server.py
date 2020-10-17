@@ -79,6 +79,8 @@ def packet_handler(data, address):
                     datapacket_id = -1
             except:
                 datapacket_id = -1
+            if datapacket_id != -1:
+                print(int(str(int(datapacket_id / 16)) + str(int(datapacket_id % 16))))
             if datapacket_id < 0x80:
                 if datapacket_id > 0:
                     connection = get_connection(address[0], address[1])
