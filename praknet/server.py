@@ -79,7 +79,7 @@ def packet_handler(data, address):
                     datapacket_id = -1
             except:
                 datapacket_id = -1
-            if datapacket_id < 0x80 and datapacket_id != -1:
+            if datapacket_id != -1:
                 print(datapacket_id)
                 if datapacket_id != messages.ID_CONNECTED_PING:
                     connection = get_connection(address[0], address[1])
