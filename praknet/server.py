@@ -100,7 +100,7 @@ def packet_handler(data, address):
                         connection["connecton_state"] = status["connected"]
                 if connection["connecton_state"] == status["connected"]:
                     if datapacket_id == messages.ID_CONNECTED_PING:
-                        buffer = handler.handle_connected_ping(data)
+                        buffer = handler.handle_connected_ping(data, address)
                         socket.send_buffer(buffer, address)
                         add_to_queue(buffer, address)
                     elif datapacket_id == messages.ID_CONNECTION_CLOSED:
