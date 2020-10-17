@@ -25,7 +25,8 @@ def add_connection(addr, port):
     token = str(addr) + ":" + str(port)
     connections[token] = {
         "connecton_state": status["connecting"],
-        "packets_queue": []
+        "packets_queue": [],
+        "iteration": 0
     }
 
 def remove_connection(addr, port):
@@ -46,6 +47,10 @@ def set_option(option, value):
 def add_to_queue(data, address):
     connection = get_connection(address[0], address[1])
     connection["packets_queue"].append(data)
+    if connection["iteration"] >= 255:
+        connection["iteration"] = 0
+    else:
+        connection["iteration"] += 1
 
 def get_last_packet(address):
     connection = get_connection(address[0], address[1])
@@ -74,6 +79,13 @@ def packet_handler(data, address):
             except:
                 datapacket_id = -1
             if datapacket_id < 0x80:
+                if datapacket_id > 0:
+                    connection = get_connection(address[0], address[1])
+                    buffer = b""
+                    buffer += b"\xc0\x00\x01\x01"
+                    buffer += bytes([connection["iteration"]])
+                    buffer += b"\x00\x00"
+                    socket.send_buffer(buffer, address)
                 if datapacket_id == messages.ID_CONNECTION_REQUEST:
                     buffer = handler.handle_connection_request(data, (address[0], address[1], 4))
                     socket.send_buffer(buffer, address)
