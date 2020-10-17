@@ -88,23 +88,26 @@ def packet_handler(data, address):
                     buffer += bytes([connection["iteration"]])
                     buffer += b"\x00\x00"
                     socket.send_buffer(buffer, address)
-                if datapacket_id == messages.ID_CONNECTION_REQUEST:
-                    buffer = handler.handle_connection_request(data, (address[0], address[1], 4))
-                    socket.send_buffer(buffer, address)
-                    add_to_queue(buffer, address)
-                elif datapacket_id == messages.ID_CONNECTED_PING:
-                    buffer = handler.handle_connected_ping(data)
-                    socket.send_buffer(buffer, address)
-                    add_to_queue(buffer, address)
-                elif datapacket_id == messages.ID_NEW_CONNECTION:
-                    packets.read_encapsulated(data)
-                    packets.read_connected_ping(packets.encapsulated["data_packet"])
-                    connection = get_connection(address[0], address[1])
-                    connection["connecton_state"] = status["connected"]
-                elif datapacket_id == messages.ID_CONNECTION_CLOSED:
-                    connection["connecton_state"] = status["disconnecting"]
-                    remove_connection(address[0], address[1])
-                    connection["connecton_state"] = status["disconnected"]
+                if connection["connecton_state"] == status["connecting"]:
+                    if datapacket_id == messages.ID_CONNECTION_REQUEST:
+                        buffer = handler.handle_connection_request(data, (address[0], address[1], 4))
+                        socket.send_buffer(buffer, address)
+                        add_to_queue(buffer, address)
+                    elif datapacket_id == messages.ID_NEW_CONNECTION:
+                        packets.read_encapsulated(data)
+                        packets.read_connected_ping(packets.encapsulated["data_packet"])
+                        connection = get_connection(address[0], address[1])
+                        connection["connecton_state"] = status["connected"]
+                if connection["connecton_state"] == status["connected"]:
+                    if datapacket_id == messages.ID_CONNECTED_PING:
+                        buffer = handler.handle_connected_ping(data)
+                        socket.send_buffer(buffer, address)
+                        add_to_queue(buffer, address)
+                    elif datapacket_id == messages.ID_CONNECTION_CLOSED:
+                        connection["connecton_state"] = status["disconnecting"]
+                        remove_connection(address[0], address[1])
+                        connection["connecton_state"] = status["disconnected"]
+                    options["custom_handler"](data, address)
     elif id == messages.ID_UNCONNECTED_PING:
         socket.send_buffer(handler.handle_unconnected_ping(data), address)
     elif id == messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
@@ -121,4 +124,3 @@ def run():
         if recv != None:
             data, addr = recv
             packet_handler(data, addr)
-            options["custom_handler"](data, addr)
