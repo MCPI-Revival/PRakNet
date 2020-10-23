@@ -68,7 +68,7 @@ def packet_handler(data, address):
     if connection != None:
         if id == messages.ID_ACK:
             packets.read_encapsulated(get_last_packet(address))
-            if not packet["is_invalid"]:
+            if not packets.encapsulated["is_invalid"]:
                 packets.encapsulated["iteration"] = connection["iteration"]
                 packets.encapsulated["encapsulation"] = 0x00
             socket.send_buffer(packets.write_encapsulated(), address)
