@@ -124,7 +124,7 @@ encapsulated = {
     "encapsulation": None,
     "length": None,
     "data_packet": None,
-    "is_invalid" None
+    "is_invalid": None
 }
 
 def read_address(data):
