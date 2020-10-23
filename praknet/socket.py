@@ -14,16 +14,12 @@ def create_socket(address):
        
 def receive_buffer():
     try:
-        recv = socket.recvfrom(65535, 0)
-        print(f"IN -> {recv}")
-        return recv
+        return socket.recvfrom(65535, 0)
     except:
         pass
           
 def send_buffer(buffer, address):
-    send = socket.sendto(buffer, address)
-    print(f"OUT -> {send}")
-    return send
+    return socket.sendto(buffer, address)
      
 def closeSocket():
     socket.close()
