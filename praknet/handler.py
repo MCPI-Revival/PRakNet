@@ -20,6 +20,12 @@ def handle_unconnected_ping_open_connections(data):
 
 def handle_open_connection_request_1(data):
     packets.read_open_connection_request_1(data)
+    client_protocol_version = packets.open_connection_request_1["protocol_version"]
+    if not client_protocol_version in server.options["accepted_raknet_protocols"]:
+        packets.invalid_protocol_version["protocol_version"] = client_protocol_version
+        packets.invalid_protocol_version["magic"] = packets.open_connection_request_1["magic"]
+        packets.invalid_protocol_version["server_guid"] = server.options["server_guid"]
+        return packets.write_invalid_protocol_version()
     packets.open_connection_reply_1["magic"] = packets.open_connection_request_1["magic"]
     packets.open_connection_reply_1["server_guid"] = server.options["server_guid"]
     packets.open_connection_reply_1["use_security"] = 0
