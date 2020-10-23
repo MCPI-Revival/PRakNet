@@ -86,6 +86,13 @@ connection_closed = {
     "id": messages.ID_CONNECTION_CLOSED
 }
 
+invalid_protocol_version = {
+    "id": messages.ID_INCOMPATIBLE_PROTOCOL_VERSION,
+    "protocol_version": None,
+    "magic": None,
+    "server_guid": None
+}
+
 unconnected_pong = {
     "id": messages.ID_UNCONNECTED_PONG,
     "time": None,
