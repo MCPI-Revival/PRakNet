@@ -67,10 +67,10 @@ def packet_handler(data, address):
     connection = get_connection(address[0], address[1])
     if connection != None:
         if id == messages.ID_ACK:
-            packet = packets.read_encapsulated(get_last_packet(address))
+            packets.read_encapsulated(get_last_packet(address))
             if not packet["is_invalid"]:
-                packet["iteration"] = connection["iteration"]
-                packet["encapsulation"] = 0x00
+                packets.encapsulated["iteration"] = connection["iteration"]
+                packets.encapsulated["encapsulation"] = 0x00
             socket.send_buffer(packets.write_encapsulated(), address)
         else:
             try:
