@@ -116,7 +116,8 @@ encapsulated = {
     "iteration": None,
     "encapsulation": None,
     "length": None,
-    "data_packet": None
+    "data_packet": None,
+    "is_invalid" None
 }
 
 def read_address(data):
@@ -473,6 +474,7 @@ def read_encapsulated(data):
     encapsulated["iteration"] = data[1]
     encapsulated["encapsulation"] = data[4]
     encapsulated["length"] = struct.unpack(">H", data[5:5 + 2])[0] >> 3
+    encapsulated["is_invalid"] = False
     if encapsulated["encapsulation"] == 0x00:
         encapsulated["data_packet"] = data[7:]
     elif encapsulated["encapsulation"] == 0x40:
@@ -484,6 +486,7 @@ def read_encapsulated(data):
         encapsulated["encapsulation"] = None
         encapsulated["length"] = None
         encapsulated["data_packet"] = None
+        encapsulated["is_invalid"] = True
 
 def write_encapsulated():
     buffer = b""
