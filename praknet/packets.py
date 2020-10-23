@@ -338,6 +338,20 @@ def write_new_connection():
     buffer += struct.pack(">Q", new_connection["pong_time"])
     return buffer
 
+def read_invalid_protocol_version(data):
+    invalid_protocol_version["id"] = data[0]
+    invalid_protocol_version["protocol_version"] = data[1]
+    invalid_protocol_version["magic"] = data[2:2 + 16]
+    invalid_protocol_version["server_guid"] = struct.unpack(">Q", data[18:18 + 8])[0]
+    
+def write_invalid_protocol_version():
+    buffer = b""
+    buffer += struct.pack(">B", invalid_protocol_version["id"])
+    buffer += struct.pack(">B", invalid_protocol_version["protocol_version"])
+    buffer += invalid_protocol_version["magic"]
+    buffer += struct.pack(">Q", invalid_protocol_version["server_guid"])
+    return buffer
+
 def read_unconnected_pong(data):
     unconnected_pong["id"] = data[0]
     unconnected_pong["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
