@@ -103,7 +103,7 @@ def packet_handler(data, address):
                             add_to_queue(buffer, address)
                         elif datapacket_id == messages.ID_NEW_CONNECTION:
                             packets.read_encapsulated(data)
-                            packets.read_connected_ping(packets.encapsulated["data_packet"])
+                            packets.read_new_connection(packets.encapsulated["data_packet"])
                             connection = get_connection(address[0], address[1])
                             connection["connecton_state"] = status["connected"]
                     elif datapacket_id == messages.ID_CONNECTION_CLOSED:
