@@ -1,6 +1,6 @@
 import socket as s
 
-socket = s.socket(s.AF_INET, s.SOCK_DGRAM, s.SOL_UDP)
+socket = s.socket(s.AF_INET, s.SOCK_DGRAM, s.IPPROTO_UDP)
 
 def create_socket(address):
     try:
@@ -14,7 +14,7 @@ def create_socket(address):
        
 def receive_buffer():
     try:
-        return socket.recvfrom(65535, 0)
+        return socket.recvfrom(65535)
     except:
         pass
           
