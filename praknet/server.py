@@ -71,7 +71,7 @@ def packet_handler(data, address):
             if not packets.encapsulated["is_invalid"]:
                 packets.encapsulated["iteration"] = connection["iteration"]
                 packets.encapsulated["encapsulation"] = 0x00
-                packets.write_encapsulated(), address)
+                socket.send_buffer(packets.write_encapsulated(), address)
             else:
                 socket.send_buffer(get_last_packet(address), address)
         else:
