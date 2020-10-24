@@ -93,6 +93,7 @@ def packet_handler(data, address):
                     buffer += bytes([connection["iteration"]])
                     buffer += b"\x00\x00"
                     socket.send_buffer(buffer, address)
+                    add_to_queue(buffer, address)
                 if datapacket_id < 0x80:
                     if connection["connecton_state"] == status["connecting"]:
                         if datapacket_id == messages.ID_CONNECTION_REQUEST:
