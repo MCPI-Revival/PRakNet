@@ -83,7 +83,7 @@ def packet_handler(data, address):
                 elif data[4] == 0x60:
                     datapacket_id = data[14]
                 else:
-                    datapacket_id = -1
+                    datapacket_id = data[10]
             except:
                 datapacket_id = -1
             if datapacket_id != -1:
@@ -102,8 +102,8 @@ def packet_handler(data, address):
                             socket.send_buffer(buffer, address)
                             add_to_queue(buffer, address)
                         elif datapacket_id == messages.ID_NEW_CONNECTION:
-                            packets.read_encapsulated(data)
-                            packets.read_new_connection(packets.encapsulated["data_packet"])
+                            #packets.read_encapsulated(data)
+                            #packets.read_new_connection(packets.encapsulated["data_packet"])
                             connection = get_connection(address[0], address[1])
                             connection["connecton_state"] = status["connected"]
                     elif datapacket_id == messages.ID_CONNECTION_CLOSED:
