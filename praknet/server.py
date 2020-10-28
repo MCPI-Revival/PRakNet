@@ -83,10 +83,10 @@ def packet_handler(data, address):
                 elif data[4] == 0x60:
                     datapacket_id = data[14]
                 else:
-                    datapacket_id = data[10]
+                    datapacket_id = -1
             except:
                 datapacket_id = -1
-            if datapacket_id != -1:
+            if datapacket_id != None:
                 print("DATA_PACKET -> " + str(hex(datapacket_id)))
                 if datapacket_id != messages.ID_CONNECTED_PING:
                     connection = get_connection(address[0], address[1])
