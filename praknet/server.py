@@ -66,7 +66,7 @@ def packet_handler(data, address):
     id = data[0]
     connection = get_connection(address[0], address[1])
     if connection != None:
-        if id == messages.ID_ACK:
+        if id == messages.ID_NACK:
             packets.read_encapsulated(get_last_packet(address))
             if not packets.encapsulated["is_invalid"]:
                 packets.encapsulated["iteration"] = connection["iteration"]
@@ -74,19 +74,18 @@ def packet_handler(data, address):
                 socket.send_buffer(packets.write_encapsulated(), address)
             else:
                 socket.send_buffer(get_last_packet(address), address)
+        elif id == messages.ID_ACK:
+            pass
         else:
-            try:
-                if data[4] == 0x00:
-                    datapacket_id = data[7]
-                elif data[4] == 0x40:
-                    datapacket_id = data[10]
-                elif data[4] == 0x60:
-                    datapacket_id = data[14]
-                else:
-                    datapacket_id = -1
-            except:
+            if data[4] == 0x00:
+                datapacket_id = data[7]
+            elif data[4] == 0x40:
+                datapacket_id = data[10]
+            elif data[4] == 0x60:
+                datapacket_id = data[14]
+            else:
                 datapacket_id = -1
-            if datapacket_id != None:
+            if datapacket_id != -1:
                 print("DATA_PACKET -> " + str(hex(datapacket_id)))
                 if datapacket_id != messages.ID_CONNECTED_PING:
                     connection = get_connection(address[0], address[1])
