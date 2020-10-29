@@ -50,7 +50,7 @@ def handle_connection_request(data, client_address):
     packets.connection_request_accepted["system_index"] = 0
     packets.connection_request_accepted["system_addresses"] = []
     for i in range(0, 20):
-        packets.connection_request_accepted["system_addresses"].append(("127.0.0.1", 19132, 4))
+        packets.connection_request_accepted["system_addresses"].append(("0.0.0.0", 0, 4))
     packets.connection_request_accepted["request_time"] = packets.connection_request["request_time"]
     packets.connection_request_accepted["time"] = int(time_now())
     packets.encapsulated["iteration"] = connection["iteration"]
