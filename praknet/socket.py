@@ -21,5 +21,5 @@ def receive_buffer():
 def send_buffer(buffer, address):
     return socket.sendto(buffer, address)
      
-def closeSocket():
+def close_socket():
     socket.close()
