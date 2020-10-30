@@ -46,6 +46,7 @@ def handle_connection_request(data, client_address):
     connection = server.get_connection(client_address[0], client_address[1])
     packets.read_encapsulated(data)
     packets.read_connection_request(packets.encapsulated["data_packet"])
+    connection["client_guid"] = packets.connection_request["client_guid"]
     packets.connection_request_accepted["client_address"] = client_address
     packets.connection_request_accepted["system_index"] = 0
     packets.connection_request_accepted["system_addresses"] = []
