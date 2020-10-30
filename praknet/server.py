@@ -26,7 +26,6 @@ connections = {}
 def add_connection(addr, port):
     token = str(addr) + ":" + str(port)
     connections[token] = {
-        "protocol": 0,
         "client_guid": 0,
         "connecton_state": status["connecting"],
         "packets_queue": [],
