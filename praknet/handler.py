@@ -1,3 +1,4 @@
+from praknet import messages
 from praknet import packets
 from praknet import server
 from time import time as time_now
@@ -22,6 +23,8 @@ def handle_open_connection_request_1(data):
     packets.read_open_connection_request_1(data)
     client_protocol_version = packets.open_connection_request_1["protocol_version"]
     if not client_protocol_version in server.options["accepted_raknet_protocols"]:
+        if client_protocol_version <= 5:
+            packets.invalid_protocol_version["id"] = messages.ID_INCOMPATIBLE_PROTOCOL_VERSION_OLD
         packets.invalid_protocol_version["protocol_version"] = client_protocol_version
         packets.invalid_protocol_version["magic"] = packets.open_connection_request_1["magic"]
         packets.invalid_protocol_version["server_guid"] = server.options["server_guid"]
