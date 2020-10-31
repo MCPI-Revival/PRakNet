@@ -1,6 +1,5 @@
 from praknet import packets
-from praknet
-import server
+from praknet import server
 import struct
 
 entities = 0
