@@ -87,7 +87,7 @@ connection_closed = {
 }
 
 invalid_protocol_version = {
-    "id": messages.ID_INCOMPATIBLE_PROTOCOL_VERSION,
+    "id": messages.ID_INCOMPATIBLE_PROTOCOL_VERSION_NEW,
     "protocol_version": None,
     "magic": None,
     "server_guid": None
