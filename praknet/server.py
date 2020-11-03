@@ -70,8 +70,8 @@ def send_encapsulated(data, address, encapsulation, iteration):
     packets.encapsulated["encapsulation"] = encapsulation
     packets.encapsulated["iteration"] = iteration
     packet = packets.write_encapsulated()
-    server.socket.send_buffer(packet, address)
-    server.add_to_queue(packet, address)
+    socket.send_buffer(packet, address)
+    add_to_queue(packet, address)
 
 def packet_handler(data, address):
     id = data[0]
