@@ -137,7 +137,7 @@ def read_address(data):
             str((~struct.unpack(">B", data[4:4 + 1])[0]) & 0xff)
         ])
         port = struct.unpack(">H", data[5:5 + 2])[0]
-        return addr, port, version
+        return (addr, port, version)
     else:
         raise Exception(f"Unknown address version {version}")
         
