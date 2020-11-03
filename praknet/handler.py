@@ -37,20 +37,19 @@ def handle_open_connection_request_1(data):
     packets.open_connection_reply_1["mtu_size"] = packets.open_connection_request_1["mtu_size"]
     return packets.write_open_connection_reply_1()
 
-def handle_open_connection_request_2(data, client_address):
+def handle_open_connection_request_2(data, address):
     packets.read_open_connection_request_2(data)
     packets.open_connection_reply_2["magic"] = packets.open_connection_request_2["magic"]
     packets.open_connection_reply_2["server_guid"] = server.options["server_guid"]
-    packets.open_connection_reply_2["client_address"] = client_address
+    packets.open_connection_reply_2["client_address"] = address
     packets.open_connection_reply_2["mtu_size"] = packets.open_connection_request_2["mtu_size"]
     packets.open_connection_reply_2["use_security"] = 0
-    server.add_connection(client_address[0], client_address[1])
+    server.add_connection(address[0], address[1])
+    server.get_connection(address[0], address[1])["mtu_size"] = packets.open_connection_reply_2["mtu_size"]
     return packets.write_open_connection_reply_2()
 
-def handle_connection_request(data, client_address):
-    connection = server.get_connection(client_address[0], client_address[1])
-    packets.read_encapsulated(data)
-    packets.read_connection_request(packets.encapsulated["data_packet"])
+def handle_connection_request(data, connection):
+    packets.read_connection_request(data)
     connection["client_guid"] = packets.connection_request["client_guid"]
     packets.connection_request_accepted["client_address"] = client_address
     packets.connection_request_accepted["system_index"] = 0
@@ -59,18 +58,10 @@ def handle_connection_request(data, client_address):
         packets.connection_request_accepted["system_addresses"].append(("0.0.0.0", 0, 4))
     packets.connection_request_accepted["request_time"] = packets.connection_request["request_time"]
     packets.connection_request_accepted["time"] = int(time_now())
-    packets.encapsulated["iteration"] = connection["iteration"]
-    packets.encapsulated["encapsulation"] = 0x00
-    packets.encapsulated["data_packet"] = packets.write_connection_request_accepted()
-    return packets.write_encapsulated()
+    return packets.write_connection_request_accepted()
 
-def handle_connected_ping(data, client_address):
-    connection = server.get_connection(client_address[0], client_address[1])
-    packets.read_encapsulated(data)
-    packets.read_connected_ping(packets.encapsulated["data_packet"])
+def handle_connected_ping(data):
+    packets.read_connected_ping(data)
     packets.connected_pong["ping_time"] = packets.connected_ping["time"]
     packets.connected_pong["pong_time"] = int(time_now())
-    packets.encapsulated["iteration"] = connection["iteration"]
-    packets.encapsulated["encapsulation"] = 0x00
-    packets.encapsulated["data_packet"] = packets.write_connected_pong()
-    return packets.write_encapsulated()
+    return packets.write_connected_pong()
