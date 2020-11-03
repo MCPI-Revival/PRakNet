@@ -8,14 +8,6 @@ def encode_pos(pos):
 def decode_pos(pos):
     return [struct.unpack("!f", pos[:4])[0] - 128, struct.unpack("!f", pos[4:8])[0] - 64, struct.unpack("!f", pos[8:12])[0] - 128]
 
-def send_encapsulated(data, address, encapsulation, iteration):
-    packets.encapsulated["data_packet"] = data
-    packets.encapsulated["encapsulation"] = encapsulation
-    packets.encapsulated["iteration"] = iteration
-    packet = packets.write_encapsulated()
-    server.socket.send_buffer(packet, address)
-    server.add_to_queue(packet, address)
-
 def custom_handler(data, address):
     if not "entities" in server.options:
         server.set_option("entities", 0)
@@ -25,11 +17,11 @@ def custom_handler(data, address):
     id = packet["data_packet"][0]
     if id == 0x82:
         new_packet = b"\x83\x00\x00\x00\x00"
-        send_encapsulated(new_packet, address, 0x60, connection["iteration"])
+        server.send_encapsulated(new_packet, address, 0x60, connection["iteration"])
         print(f"LOGIN STATUS -> {new_packet}")
         server.options["entities"] += 1
         new_packet = b"\x87\x01\x02\x03\x04\x00\x00\x00\x00\x00\x00\x00\x01" + struct.pack(">I", server.options["entities"]) + encode_pos([0, 4, 0])
-        send_encapsulated(new_packet, address, 0x60, connection["iteration"])
+        server.send_encapsulated(new_packet, address, 0x60, connection["iteration"])
         print(f"START GAME -> {new_packet}")
 
 server.set_option("custom_handler", custom_handler)
