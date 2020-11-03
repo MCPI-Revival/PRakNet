@@ -27,6 +27,8 @@ def add_connection(addr, port):
     token = str(addr) + ":" + str(port)
     connections[token] = {
         "client_guid": 0,
+        "mtu_size": 0,
+        "address": (addr, port, 4)
         "connecton_state": status["connecting"],
         "packets_queue": [],
         "iteration": 0
@@ -62,6 +64,14 @@ def get_last_packet(address):
         return queue[-1]
     else:
         return b""
+    
+def send_encapsulated(data, address, encapsulation, iteration):
+    packets.encapsulated["data_packet"] = data
+    packets.encapsulated["encapsulation"] = encapsulation
+    packets.encapsulated["iteration"] = iteration
+    packet = packets.write_encapsulated()
+    server.socket.send_buffer(packet, address)
+    server.add_to_queue(packet, address)
 
 def packet_handler(data, address):
     id = data[0]
@@ -78,44 +88,37 @@ def packet_handler(data, address):
         elif id == messages.ID_ACK:
             pass
         else:
-            if data[4] == 0x00:
-                datapacket_id = data[7]
-            elif data[4] == 0x40:
-                datapacket_id = data[10]
-            elif data[4] == 0x60:
-                datapacket_id = data[14]
-            else:
-                datapacket_id = -1
-            if datapacket_id != -1:
-                print("DATA_PACKET -> " + str(hex(datapacket_id)))
-                if datapacket_id != messages.ID_CONNECTED_PING:
-                    connection = get_connection(address[0], address[1])
-                    buffer = b""
-                    buffer += b"\xc0\x00\x01\x01"
-                    buffer += bytes([connection["iteration"]])
-                    buffer += b"\x00\x00"
-                    socket.send_buffer(buffer, address)
-                if datapacket_id < 0x80:
-                    if connection["connecton_state"] == status["connecting"]:
-                        if datapacket_id == messages.ID_CONNECTION_REQUEST:
-                            buffer = handler.handle_connection_request(data, (address[0], address[1], 4))
-                            socket.send_buffer(buffer, address)
-                            add_to_queue(buffer, address)
-                        elif datapacket_id == messages.ID_NEW_CONNECTION:
-                            #packets.read_encapsulated(data)
-                            #packets.read_new_connection(packets.encapsulated["data_packet"])
-                            connection = get_connection(address[0], address[1])
-                            connection["connecton_state"] = status["connected"]
-                    elif datapacket_id == messages.ID_CONNECTION_CLOSED:
-                        connection["connecton_state"] = status["disconnecting"]
-                        remove_connection(address[0], address[1])
-                        connection["connecton_state"] = status["disconnected"]
-                    elif datapacket_id == messages.ID_CONNECTED_PING:
-                        buffer = handler.handle_connected_ping(data, address)
+            packets.read_encapsulated(data)
+            data_packet = packets.encapsulated["data_packet"]
+            id = data_packet[0]
+            print("DATA_PACKET -> " + str(hex(id)))
+            if id != messages.ID_CONNECTED_PING:
+                buffer = b""
+                buffer += b"\xc0\x00\x01\x01"
+                buffer += bytes([connection["iteration"]])
+                buffer += b"\x00\x00"
+                socket.send_buffer(buffer, address)
+            if id < 0x80:
+                if connection["connecton_state"] == status["connecting"]:
+                    if id == messages.ID_CONNECTION_REQUEST:
+                        buffer = handler.handle_connection_request(data_packet, (address[0], address[1], 4))
                         socket.send_buffer(buffer, address)
                         add_to_queue(buffer, address)
-                if connection["connecton_state"] == status["connected"]:
-                    options["custom_handler"](data, address)
+                    elif id == messages.ID_NEW_CONNECTION:
+                        #packets.read_encapsulated(data)
+                        #packets.read_new_connection(packets.encapsulated["data_packet"])
+                        connection = get_connection(address[0], address[1])
+                        connection["connecton_state"] = status["connected"]
+                elif id == messages.ID_CONNECTION_CLOSED:
+                    connection["connecton_state"] = status["disconnecting"]
+                    remove_connection(address[0], address[1])
+                    connection["connecton_state"] = status["disconnected"]
+                elif id == messages.ID_CONNECTED_PING:
+                    buffer = handler.handle_connected_ping(data, address)
+                    socket.send_buffer(buffer, address)
+                    add_to_queue(buffer, address)
+            if connection["connecton_state"] == status["connected"]:
+                options["custom_handler"](data, address)
     elif id == messages.ID_UNCONNECTED_PING:
         socket.send_buffer(handler.handle_unconnected_ping(data), address)
     elif id == messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
