@@ -101,22 +101,17 @@ def packet_handler(data, address):
             if id < 0x80:
                 if connection["connecton_state"] == status["connecting"]:
                     if id == messages.ID_CONNECTION_REQUEST:
-                        buffer = handler.handle_connection_request(data_packet, (address[0], address[1], 4))
-                        socket.send_buffer(buffer, address)
-                        add_to_queue(buffer, address)
+                        buffer = handler.handle_connection_request(data_packet, connection)
+                        send_encapsulated(buffer, address, 0x00, connection["iteration"])
                     elif id == messages.ID_NEW_CONNECTION:
-                        #packets.read_encapsulated(data)
-                        #packets.read_new_connection(packets.encapsulated["data_packet"])
-                        connection = get_connection(address[0], address[1])
                         connection["connecton_state"] = status["connected"]
                 elif id == messages.ID_CONNECTION_CLOSED:
                     connection["connecton_state"] = status["disconnecting"]
                     remove_connection(address[0], address[1])
                     connection["connecton_state"] = status["disconnected"]
                 elif id == messages.ID_CONNECTED_PING:
-                    buffer = handler.handle_connected_ping(data, address)
-                    socket.send_buffer(buffer, address)
-                    add_to_queue(buffer, address)
+                    buffer = handler.handle_connected_ping(data_packet)
+                    send_encapsulated(buffer, address, 0x00, connection["iteration"])
             if connection["connecton_state"] == status["connected"]:
                 options["custom_handler"](data, address)
     elif id == messages.ID_UNCONNECTED_PING:
