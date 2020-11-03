@@ -28,7 +28,7 @@ def add_connection(addr, port):
     connections[token] = {
         "client_guid": 0,
         "mtu_size": 0,
-        "address": (addr, port, 4)
+        "address": (addr, port, 4),
         "connecton_state": status["connecting"],
         "packets_queue": [],
         "iteration": 0
