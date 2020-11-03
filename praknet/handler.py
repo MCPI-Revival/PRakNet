@@ -45,9 +45,7 @@ def handle_open_connection_request_2(data, address):
     packets.open_connection_reply_2["mtu_size"] = packets.open_connection_request_2["mtu_size"]
     packets.open_connection_reply_2["use_security"] = 0
     server.add_connection(address[0], address[1])
-    connection = server.get_connection(address[0], address[1])
-    connection["mtu_size"] = packets.open_connection_reply_2["mtu_size"]
-    connection["address"] = address
+    server.get_connection(address[0], address[1])["mtu_size"] = packets.open_connection_reply_2["mtu_size"]
     return packets.write_open_connection_reply_2()
 
 def handle_connection_request(data, connection):
