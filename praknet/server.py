@@ -93,11 +93,9 @@ def packet_handler(data, address):
             id = data_packet[0]
             print("DATA_PACKET -> " + str(hex(id)))
             if id != messages.ID_CONNECTED_PING:
-                buffer = b""
-                buffer += b"\xc0\x00\x01\x01"
-                buffer += bytes([connection["iteration"]])
-                buffer += b"\x00\x00"
-                socket.send_buffer(buffer, address)
+                packets.ack["packets"] = []
+                packets.ack["packets"].append(connection["iteration"])
+                socket.send_buffer(packets.write_ack(), address)
             if id < 0x80:
                 if connection["connecton_state"] == status["connecting"]:
                     if id == messages.ID_CONNECTION_REQUEST:
