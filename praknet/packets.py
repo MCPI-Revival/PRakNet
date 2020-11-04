@@ -419,7 +419,7 @@ def write_nack():
                     buffer += struct.pack("<L", end_index)[0:-1]
                     start_index = end_index = index
                 records += 1
-        if start_index == last_index:
+        if start_index == end_index:
             buffer += struct.pack(">B", 1)
             buffer += struct.pack("<L", start_index)[0:-1]
         else:
@@ -480,7 +480,7 @@ def write_ack():
                     buffer += struct.pack("<L", end_index)[0:-1]
                     start_index = end_index = index
                 records += 1
-        if start_index == last_index:
+        if start_index == end_index:
             buffer += struct.pack(">B", 1)
             buffer += struct.pack("<L", start_index)[0:-1]
         else:
