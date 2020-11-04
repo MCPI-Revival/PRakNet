@@ -397,7 +397,7 @@ def write_nack():
     buffer = b""
     buffer += struct.pack(">B", nack["id"])
     records = 0
-    nack["packets"].sorted()
+    nack["packets"].sort()
     if len(nack["packets"]) > 0:
         pointer = 1
         start_index = nack["packets"][0]
@@ -458,7 +458,7 @@ def write_ack():
     buffer = b""
     buffer += struct.pack(">B", ack["id"])
     records = 0
-    ack["packets"].sorted()
+    ack["packets"].sort()
     if len(ack["packets"]) > 0:
         pointer = 1
         start_index = ack["packets"][0]
