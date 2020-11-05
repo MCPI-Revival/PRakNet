@@ -65,7 +65,7 @@ def get_last_packet(address):
     else:
         return b""
     
-def send_ack_queue():
+def send_ack_queue(address):
     connection = get_connection(address[0], address[1])
     packets.ack["packets"] = []
     packets.ack["packets"].append(connection["sequence_order"])
@@ -85,7 +85,7 @@ def send_encapsulated(data, address, reliability, sequence_order, need_ack = Fal
     packets.encapsulated["fragment"]["index"] = compound_index
     packet = packets.write_encapsulated()
     if need_ack:
-        send_ack_queue()
+        send_ack_queue(address)
     socket.send_buffer(packet, address)
     add_to_queue(packet, address)
 
@@ -110,7 +110,7 @@ def packet_handler(data, address):
                         buffer = handler.handle_connection_request(data_packet, connection)
                         send_encapsulated(buffer, address, 0, connection["sequence_order"], True)
                     elif id == messages.ID_NEW_CONNECTION:
-                        send_ack_queue()
+                        send_ack_queue(address)
                         connection["connecton_state"] = status["connected"]
                 elif id == messages.ID_CONNECTION_CLOSED:
                     connection["connecton_state"] = status["disconnecting"]
