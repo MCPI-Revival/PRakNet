@@ -533,7 +533,7 @@ def read_encapsulated(data):
         encapsulated["fragment"]["index"] = struct.unpack('>L', data[offset:offset + 4])[0]
         offset += 4
     encapsulated["body"] = data[offset:offset + encapsulated["length"]]
-    offset += length
+    offset += encapsulated["length"]
 
 def write_encapsulated():
     buffer = b""
