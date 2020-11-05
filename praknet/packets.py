@@ -504,22 +504,35 @@ def write_ack():
     return buffer
 
 def read_encapsulated(data):
-    encapsulated["iteration"] = data[1]
-    encapsulated["encapsulation"] = data[4]
-    encapsulated["length"] = struct.unpack(">H", data[5:5 + 2])[0] >> 3
-    encapsulated["is_invalid"] = False
-    if encapsulated["encapsulation"] == 0x00:
-        encapsulated["data_packet"] = data[7:]
-    elif encapsulated["encapsulation"] == 0x40:
-        encapsulated["data_packet"] = data[10:]
-    elif encapsulated["encapsulation"] == 0x60:
-        encapsulated["data_packet"] = data[14:]
-    else:
-        encapsulated["iteration"] = None
-        encapsulated["encapsulation"] = None
-        encapsulated["length"] = None
-        encapsulated["data_packet"] = None
-        encapsulated["is_invalid"] = True
+    offset = 1
+    encapsulated["sequence_order"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+    offset += 3
+    flags = struct.unpack(">B", data[offset:offset + 1])[0]
+    offset += 1
+    encapsulated["flags"] = (flags & 224) >> 5
+    encapsulated["is_fragmented"] = (flags & 0x10) > 0
+    encapsulated["length"] = struct.unpack(">H", data[offset:offset + 2])[0] >> 3
+    offset += 2
+    if reliability.is_reliable(encapsulated["flags"]):
+        encapsulated["reliable_frame_index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+        offset += 3
+    if reliability.is_sequenced(encapsulated["flags"]):
+        encapsulated["sequenced_frame_index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+        offset += 3
+    if reliability.is_sequenced_or_ordered(encapsulated["flags"]):
+        encapsulated["order"]["ordered_frame_index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+        offset += 3
+        encapsulated["order"]["order_channel"] = struct.unpack(">B", data[offset:offset + 1])[0]
+        offset += 1
+    if encapsulated["is_fragmented"]:
+        encapsulated["fragment"]["compound_size"] = struct.unpack('>L', data[offset:offset + 4])[0]
+        offset += 4
+        encapsulated["fragment"]["compound_id"] = struct.unpack(">H", data[offset:offset + 2])[0]
+        offset += 2
+        encapsulated["fragment"]["index"] = struct.unpack('>L', data[offset:offset + 4])[0]
+        offset += 4
+    encapsulated["body"] = data[offset:offset + encapsulated["length"]]
+    offset += length
 
 def write_encapsulated():
     buffer = b""
