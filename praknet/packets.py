@@ -120,11 +120,21 @@ ack = {
 }
 
 encapsulated = {
-    "iteration": None,
-    "encapsulation": None,
+    "sequence_order": None,
+    "flags": None,
     "length": None,
-    "data_packet": None,
-    "is_invalid": None
+    "reliable_frame_index": None,
+    "sequenced_frame_index": None,
+    "order": {
+        "ordered_frame_index": None,
+        "order_channel": None
+    },
+    "fragment": {
+        "compound_size": None,
+        "compound_id": None,
+        "index": None
+    },
+    "body": None
 }
 
 def read_address(data):
