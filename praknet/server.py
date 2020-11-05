@@ -65,10 +65,11 @@ def get_last_packet(address):
     else:
         return b""
     
-def send_encapsulated(data, address, reliability, sequence_order, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
+def send_encapsulated(data, address, reliability, sequence_order, need_ack = False, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
     packets.encapsulated["body"] = data
     packets.encapsulated["flags"] = reliability
     packets.encapsulated["sequence_order"] = sequence_order
+    packets.encapsulated["need_ack"] = need_ack
     packets.encapsulated["reliable_frame_index"] = reliable_frame_index
     packets.encapsulated["sequenced_frame_index"] = sequenced_frame_index
     packets.encapsulated["order"]["ordered_frame_index"] = ordered_frame_index
@@ -77,6 +78,10 @@ def send_encapsulated(data, address, reliability, sequence_order, reliable_frame
     packets.encapsulated["fragment"]["compound_id"] = compound_id
     packets.encapsulated["fragment"]["index"] = compound_index
     packet = packets.write_encapsulated()
+    if need_ack:
+        packets.ack["packets"] = []
+        packets.ack["packets"].append(connection["sequence_order"])
+        socket.send_buffer(packets.write_ack(), address)
     socket.send_buffer(packet, address)
     add_to_queue(packet, address)
 
@@ -93,18 +98,13 @@ def packet_handler(data, address):
         else:
             packets.read_encapsulated(data)
             data_packet = packets.encapsulated["body"]
-            need_ack = packets.encapsulated["need_ack"]
             id = data_packet[0]
             print("DATA_PACKET -> " + str(hex(id)))
-            if need_ack:
-                packets.ack["packets"] = []
-                packets.ack["packets"].append(connection["sequence_order"])
-                socket.send_buffer(packets.write_ack(), address)
             if id < 0x80:
                 if connection["connecton_state"] == status["connecting"]:
                     if id == messages.ID_CONNECTION_REQUEST:
                         buffer = handler.handle_connection_request(data_packet, connection)
-                        send_encapsulated(buffer, address, 0, connection["sequence_order"])
+                        send_encapsulated(buffer, address, 0, connection["sequence_order"], True)
                     elif id == messages.ID_NEW_CONNECTION:
                         connection["connecton_state"] = status["connected"]
                 elif id == messages.ID_CONNECTION_CLOSED:
