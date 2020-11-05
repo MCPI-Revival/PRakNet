@@ -21,7 +21,7 @@ def is_reliable(reliability):
     else:
         return False
 
-def isSequenced(reliability):
+def is_sequenced(reliability):
         if reliability == unreliable_sequenced:
             return True
         elif reliability == reliable_sequenced:
