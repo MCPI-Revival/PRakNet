@@ -537,7 +537,7 @@ def read_encapsulated(data):
 
 def write_encapsulated():
     buffer = b""
-    buffer += b"\x84"
+    buffer += b"\x80"
     buffer += struct.pack("<L", encapsulated["sequence_order"])[0:-1]
     flags = encapsulated["flags"] << 5
     if encapsulated["is_fragmented"]:
