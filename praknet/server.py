@@ -95,6 +95,7 @@ def packet_handler(data, address):
     if connection != None:
         if id == messages.ID_NACK:
             packets.read_encapsulated(get_last_packet(address))
+            packets.encapsulated["flags"] = 0
             packets.encapsulated["sequence_order"] = connection["sequence_order"]
             socket.send_buffer(packets.write_encapsulated(), address)
         elif id == messages.ID_ACK:
