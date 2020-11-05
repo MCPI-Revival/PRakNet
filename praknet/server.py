@@ -65,10 +65,14 @@ def get_last_packet(address):
     else:
         return b""
     
-def send_encapsulated(data, address, encapsulation, iteration):
-    packets.encapsulated["data_packet"] = data
-    packets.encapsulated["encapsulation"] = encapsulation
-    packets.encapsulated["iteration"] = iteration
+def send_encapsulated(data, address, reliability, sequence_order, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0):
+    packets.encapsulated["body"] = data
+    packets.encapsulated["flags"] = reliability
+    packets.encapsulated["sequence_order"] = sequence_order
+    packets.encapsulated["reliable_frame_index"] = reliable_frame_index
+    packets.encapsulated["sequenced_frame_index"] = sequenced_frame_index
+    packets.encapsulated["ordered_frame_index"] = ordered_frame_index
+    packets.encapsulated["order_channel"] = order_channel
     packet = packets.write_encapsulated()
     socket.send_buffer(packet, address)
     add_to_queue(packet, address)
@@ -79,20 +83,17 @@ def packet_handler(data, address):
     if connection != None:
         if id == messages.ID_NACK:
             packets.read_encapsulated(get_last_packet(address))
-            if not packets.encapsulated["is_invalid"]:
-                packets.encapsulated["iteration"] = connection["iteration"]
-                packets.encapsulated["encapsulation"] = 0x00
-                socket.send_buffer(packets.write_encapsulated(), address)
-            else:
-                socket.send_buffer(get_last_packet(address), address)
+            packets.encapsulated["sequence_order"] = connection["iteration"]
+            socket.send_buffer(packets.write_encapsulated(), address)
         elif id == messages.ID_ACK:
             pass
         else:
             packets.read_encapsulated(data)
-            data_packet = packets.encapsulated["data_packet"]
+            data_packet = packets.encapsulated["body"]
+            need_ack = packets.encapsulated["need_ack"]
             id = data_packet[0]
             print("DATA_PACKET -> " + str(hex(id)))
-            if id != messages.ID_CONNECTED_PING:
+            if need_ack:
                 packets.ack["packets"] = []
                 packets.ack["packets"].append(connection["iteration"])
                 socket.send_buffer(packets.write_ack(), address)
