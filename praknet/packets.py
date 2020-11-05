@@ -1,4 +1,5 @@
 from praknet import messages
+from praknet import reliability
 import struct
 
 connected_ping = {
