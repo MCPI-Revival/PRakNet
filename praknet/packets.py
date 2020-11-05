@@ -120,6 +120,8 @@ ack = {
 }
 
 encapsulated = {
+    "is_fragmented": None,
+    "need_ack": None,
     "sequence_order": None,
     "flags": None,
     "length": None,
@@ -522,14 +524,22 @@ def read_encapsulated(data):
 def write_encapsulated():
     buffer = b""
     buffer += b"\x84"
-    buffer += struct.pack(">B", encapsulated["iteration"])
-    buffer += b"\x00\x00"
-    buffer += struct.pack(">B", encapsulated["encapsulation"])
-    buffer += struct.pack(">H", len(encapsulated["data_packet"]) << 3)
-    if encapsulated["encapsulation"] == 0x00:
-        buffer += encapsulated["data_packet"]
-    elif encapsulated["encapsulation"] == 0x40:
-        buffer += b"\x00\x00\x00" + encapsulated["data_packet"]
-    elif encapsulated["encapsulation"] == 0x60:
-        buffer += b"\x00\x00\x00\x00\x00\x00\x00" + encapsulated["data_packet"]
+    buffer += struct.pack("<L", encapsulated["sequence_order"])[0:-1]
+    flags = encapsulated["flags"] << 5
+    if encapsulated["is_fragmented"]:
+        flags |= 0x10
+    buffer += struct.pack(">B", flags)
+    buffer += struct.pack(">H", len(encapsulated["body"]) << 3)
+    if reliability.is_reliable(encapsulated["flags"]):
+        buffer += struct.pack("<L", encapsulated["reliable_frame_index"])[0:-1]
+    if reliability.is_sequenced(encapsulated["flags"]):
+        buffer += struct.pack("<L", encapsulated["sequenced_frame_index"])[0:-1]
+    if reliability.is_sequenced_or_ordered(encapsulated["flags"]):
+        buffer += struct.pack("<L", encapsulated["order"]["ordered_frame_index"])[0:-1]
+        buffer += struct.pack(">B", encapsulated["order"]["order_channel"])
+    if encapsulated["is_fragmented"]:
+        buffer += struct.pack(">L", encapsulated["fragment"]["compound_size"])
+        buffer += struct.pack(">H", encapsulated["fragment"]["compound_id"])
+        buffer += struct.pack(">L", encapsulated["fragment"]["index"])
+    buffer += encapsulated["body"]
     return buffer
