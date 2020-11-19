@@ -84,9 +84,9 @@ def send_encapsulated(data, address, reliability, sequence_order, need_ack = Fal
     packets.encapsulated["fragment"]["compound_id"] = compound_id
     packets.encapsulated["fragment"]["index"] = compound_index
     packet = packets.write_encapsulated()
+    socket.send_buffer(packet, address)
     if need_ack:
         send_ack_queue(address)
-    socket.send_buffer(packet, address)
     add_to_queue(packet, address)
 
 def packet_handler(data, address):
