@@ -9,7 +9,7 @@ options = {
     "name": "",
     "ip": "0.0.0.0",
     "port": 19132,
-    "server_guid": struct.unpack(">Q", os.urandom(8))[0],
+    "server_guid": struct.unpack(">q", os.urandom(8))[0],
     "custom_handler": lambda data, addr: 0,
     "accepted_raknet_protocols": [5, 6, 7, 8, 9, 10]
 }
@@ -111,15 +111,18 @@ def packet_handler(data, address):
                         buffer = handler.handle_connection_request(data_packet, connection)
                         send_encapsulated(buffer, address, 0, connection["sequence_order"], True)
                     elif id == messages.ID_NEW_CONNECTION:
-                        send_ack_queue(address)
+                        packets.read_encapsulated(data)
+                        packets.read_new_connection(packets.encapsulated["body"])
+                        print(packets.new_connection)
                         connection["connecton_state"] = status["connected"]
+                        send_ack_queue(address)
                 elif id == messages.ID_CONNECTION_CLOSED:
                     connection["connecton_state"] = status["disconnecting"]
                     remove_connection(address[0], address[1])
                     connection["connecton_state"] = status["disconnected"]
                 elif id == messages.ID_CONNECTED_PING:
                     buffer = handler.handle_connected_ping(data_packet)
-                    send_encapsulated(buffer, address, 0, connection["sequence_order"])
+                    send_encapsulated(buffer, address, 0, connection["sequence_order"], True)
             if connection["connecton_state"] == status["connected"]:
                 options["custom_handler"](data, address)
     elif id == messages.ID_UNCONNECTED_PING:
