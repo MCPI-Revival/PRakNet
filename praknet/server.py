@@ -52,6 +52,7 @@ def add_to_queue(data, address):
     connection = get_connection(address[0], address[1])
     connection["packets_queue"].append(data)
     if connection["sequence_order"] >= 16777216:
+        connection["packets_queue"] = []
         connection["sequence_order"] = 0
     else:
         connection["sequence_order"] += 1
