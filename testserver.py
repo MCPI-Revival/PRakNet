@@ -25,7 +25,11 @@ def custom_handler(data, address):
         server.send_ack_queue(address)
     elif id == 0x84:
         server.send_ack_queue(address)
-
+        player = f"{address[0]}:{address[1]}"
+        message = f"{player} joined the game."
+        new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
+        server.send_encapsulated(new_packet, address, 0, connection["sequence_order"], True)
+        
 server.set_option("custom_handler", custom_handler)
 server.set_option("name", "MCCPP;MINECON;PRakNet Server")
 server.run()
