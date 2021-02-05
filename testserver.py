@@ -16,6 +16,9 @@ def custom_handler(data, address):
     packet = packets.encapsulated
     id = packet["body"][0]
     if id == 0x82:
+        length = struct.unpack(">H", data[1:1 + 2])[0]
+        connection["username"] = data[3:3 + length].decode()
+        connection["client_id"] = struct.unpack(">q", data[11 + length:])[0]
         new_packet = b"\x83\x00\x00\x00\x00"
         server.send_encapsulated(new_packet, address, 0, connection["sequence_order"], True)
         server.options["entities"] += 1
@@ -25,8 +28,7 @@ def custom_handler(data, address):
         server.send_ack_queue(address)
     elif id == 0x84:
         server.send_ack_queue(address)
-        player = f"{address[0]}:{address[1]}"
-        message = f"{player} joined the game."
+        message = f"{connection["username"]} joined the game."
         new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
         server.broadcast_encapsulated(new_packet, 0, connection["sequence_order"], True)
         
