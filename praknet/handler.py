@@ -47,7 +47,6 @@ def handle_open_connection_request_2(data, address):
 
 def handle_connection_request(data, connection):
     packets.read_connection_request(data)
-    connection["client_guid"] = packets.connection_request["client_guid"]
     packets.connection_request_accepted["client_address"] = connection["address"]
     packets.connection_request_accepted["system_index"] = 0
     packets.connection_request_accepted["system_addresses"] = []
