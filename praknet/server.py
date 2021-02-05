@@ -83,6 +83,7 @@ def send_encapsulated(data, address, reliability, sequence_order, reliable_frame
     packets.encapsulated["fragment"]["index"] = compound_index
     packet = packets.write_encapsulated()
     socket.send_buffer(packet, address)
+    send_ack_queue(address)
     add_to_queue(packet, address)
 
 def broadcast_encapsulated(data, reliability, sequence_order, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
