@@ -90,7 +90,7 @@ def send_encapsulated(data, address, reliability, sequence_order, need_ack = Fal
     add_to_queue(packet, address)
 
 def broadcast_encapsulated(data, reliability, sequence_order, need_ack = False, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
-    for connection in connections:
+    for token, connection in dict(connections.items()):
         send_encapsulated(data, connection["address"], reliability, sequence_order, need_ack = False, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0)
     
 def packet_handler(data, address):
