@@ -11,7 +11,7 @@ options = {
     "port": 19132,
     "server_guid": struct.unpack(">q", os.urandom(8))[0],
     "custom_handler": lambda data, addr: 0,
-    "accepted_raknet_protocols": [5, 6, 7, 8, 9, 10]
+    "accepted_raknet_protocols": [5]
 }
 
 status = {
@@ -89,6 +89,10 @@ def send_encapsulated(data, address, reliability, sequence_order, need_ack = Fal
         send_ack_queue(address)
     add_to_queue(packet, address)
 
+def broadcast_encapsulated(data, reliability, sequence_order, need_ack = False, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
+    for connection in connections:
+        send_encapsulated(data, connection["address"], reliability, sequence_order, need_ack = False, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0)
+    
 def packet_handler(data, address):
     id = data[0]
     connection = get_connection(address[0], address[1])
