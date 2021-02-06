@@ -71,10 +71,11 @@ def send_ack_queue(address):
     packets.ack["packets"].append(connection["sequence_order"])
     socket.send_buffer(packets.write_ack(), address)
     
-def send_encapsulated(data, address, reliability, sequence_order, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
+def send_encapsulated(data, address, reliability, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
+    connection = get_connection(address[0], address[1])
     packets.encapsulated["body"] = data
     packets.encapsulated["flags"] = reliability
-    packets.encapsulated["sequence_order"] = sequence_order
+    packets.encapsulated["sequence_order"] = connection["sequence_order"]
     packets.encapsulated["reliable_frame_index"] = reliable_frame_index
     packets.encapsulated["sequenced_frame_index"] = sequenced_frame_index
     packets.encapsulated["order"]["ordered_frame_index"] = ordered_frame_index
@@ -87,9 +88,9 @@ def send_encapsulated(data, address, reliability, sequence_order, reliable_frame
     send_ack_queue(address)
     add_to_queue(packet, address)
 
-def broadcast_encapsulated(data, reliability, sequence_order, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
+def broadcast_encapsulated(data, reliability, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
     for connection in connections.values():
-        send_encapsulated(data, (connection["address"][0], connection["address"][1]), reliability, sequence_order, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0)
+        send_encapsulated(data, (connection["address"][0], connection["address"][1]), reliability, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0)
     
 def packet_handler(data, address):
     id = data[0]
@@ -112,7 +113,7 @@ def packet_handler(data, address):
                 if connection["connecton_state"] == status["connecting"]:
                     if id == messages.ID_CONNECTION_REQUEST:
                         buffer = handler.handle_connection_request(data_packet, connection)
-                        send_encapsulated(buffer, address, 0, connection["sequence_order"])
+                        send_encapsulated(buffer, address, 0)
                     elif id == messages.ID_NEW_CONNECTION:
                         packets.read_encapsulated(data)
                         packets.read_new_connection(packets.encapsulated["body"])
@@ -124,7 +125,7 @@ def packet_handler(data, address):
                     connection["connecton_state"] = status["disconnected"]
                 elif id == messages.ID_CONNECTED_PING:
                     buffer = handler.handle_connected_ping(data_packet)
-                    send_encapsulated(buffer, address, 0, connection["sequence_order"])
+                    send_encapsulated(buffer, address, 0)
             if connection["connecton_state"] == status["connected"]:
                 options["custom_handler"](data, address)
     elif id == messages.ID_UNCONNECTED_PING:
