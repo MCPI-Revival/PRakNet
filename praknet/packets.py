@@ -214,14 +214,14 @@ def read_open_connection_request_1(data):
     open_connection_request_1["id"] = data[0]
     open_connection_request_1["magic"] = data[1:1 + 16]
     open_connection_request_1["protocol_version"] = struct.unpack(">B", data[17:17 + 1])[0]
-    open_connection_request_1["mtu_size"] = len(data[18:])
+    open_connection_request_1["mtu_size"] = len(data[18:]) + 46
 
 def write_open_connection_request_1():
     buffer = b""
     buffer += struct.pack(">B", open_connection_request_1["id"])
     buffer += open_connection_request_1["magic"]
     buffer += struct.pack(">B", open_connection_request_1["protocol_version"])
-    buffer += b"\x00" * open_connection_request_1["mtu_size"]
+    buffer += b"\x00" * (open_connection_request_1["mtu_size"] - 46)
     return buffer
 
 def read_open_connection_reply_1(data):
