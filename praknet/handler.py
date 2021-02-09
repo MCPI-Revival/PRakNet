@@ -58,6 +58,5 @@ def handle_connection_request(data, connection):
 
 def handle_connected_ping(data):
     packets.read_connected_ping(data)
-    packets.connected_pong["ping_time"] = packets.connected_ping["time"]
-    packets.connected_pong["pong_time"] = int(time_now())
+    packets.connected_pong["time"] = packets.connected_ping["time"]
     return packets.write_connected_pong()
