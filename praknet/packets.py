@@ -21,7 +21,7 @@ unconnected_ping_open_connections = {
 
 connected_pong = {
     "id": messages.ID_CONNECTED_PONG,
-    "ping_time": None
+    "time": None
 }
 
 open_connection_request_1 = {
@@ -202,12 +202,12 @@ def write_unconnected_ping_open_connections():
 
 def read_connected_pong(data):
     connected_ping["id"] = data[0]
-    connected_ping["ping_time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    connected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
 
 def write_connected_pong():
     buffer = b""
     buffer += struct.pack(">B", connected_pong["id"])
-    buffer += struct.pack(">Q", connected_pong["ping_time"])
+    buffer += struct.pack(">Q", connected_pong["time"])
     return buffer
 
 def read_open_connection_request_1(data):
