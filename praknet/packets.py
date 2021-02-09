@@ -178,36 +178,36 @@ def write_connected_ping():
 
 def read_unconnected_ping(data):
     unconnected_ping["id"] = data[0]
-    unconnected_ping["time"] = struct.unpack(">q", data[1:1 + 8])[0]
+    unconnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
     unconnected_ping["magic"] = data[9:9 + 16]
 
 def write_unconnected_ping():
     buffer = b""
     buffer += struct.pack(">B", unconnected_ping["id"])
-    buffer += struct.pack(">q", unconnected_ping["time"])
+    buffer += struct.pack(">Q", unconnected_ping["time"])
     buffer += unconnected_ping["magic"]
     return buffer
 
 def read_unconnected_ping_open_connections(data):
     unconnected_ping_open_connections["id"] = data[0]
-    unconnected_ping_open_connections["time"] = struct.unpack(">q", data[1:1 + 8])[0]
+    unconnected_ping_open_connections["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
     unconnected_ping_open_connections["magic"] = data[9:9 + 16]
 
 def write_unconnected_ping_open_connections():
     buffer = b""
     buffer += struct.pack(">B", unconnected_ping_open_connections["id"])
-    buffer += struct.pack(">q", unconnected_ping_open_connections["time"])
+    buffer += struct.pack(">Q", unconnected_ping_open_connections["time"])
     buffer += unconnected_ping_open_connections["magic"]
     return buffer
 
 def read_connected_pong(data):
     connected_ping["id"] = data[0]
-    connected_ping["ping_time"] = struct.unpack(">q", data[1:1 + 8])[0]
+    connected_ping["ping_time"] = struct.unpack(">Q", data[1:1 + 8])[0]
 
 def write_connected_pong():
     buffer = b""
     buffer += struct.pack(">B", connected_pong["id"])
-    buffer += struct.pack(">q", connected_pong["ping_time"])
+    buffer += struct.pack(">Q", connected_pong["ping_time"])
     return buffer
 
 def read_open_connection_request_1(data):
@@ -227,7 +227,7 @@ def write_open_connection_request_1():
 def read_open_connection_reply_1(data):
     open_connection_reply_1["id"] = data[0]
     open_connection_reply_1["magic"] = data[1:1 + 16]
-    open_connection_reply_1["server_guid"] = struct.unpack(">q", data[17:17 + 8])[0]
+    open_connection_reply_1["server_guid"] = struct.unpack(">Q", data[17:17 + 8])[0]
     open_connection_reply_1["use_security"] = struct.unpack(">B", data[25:25 + 1])[0]
     open_connection_reply_1["mtu_size"] = struct.unpack(">H", data[26:26 + 2])[0]
 
@@ -235,7 +235,7 @@ def write_open_connection_reply_1():
     buffer = b""
     buffer += struct.pack(">B", open_connection_reply_1["id"])
     buffer += open_connection_reply_1["magic"]
-    buffer += struct.pack(">q", open_connection_reply_1["server_guid"])
+    buffer += struct.pack(">Q", open_connection_reply_1["server_guid"])
     buffer += struct.pack(">B", open_connection_reply_1["use_security"])
     buffer += struct.pack(">H", open_connection_reply_1["mtu_size"])
     return buffer
@@ -245,7 +245,7 @@ def read_open_connection_request_2(data):
     open_connection_request_2["magic"] = data[1:1 + 16]
     open_connection_request_2["server_address"] = read_address(data[17:17 + 7])
     open_connection_request_2["mtu_size"] = struct.unpack(">H", data[24:24 + 2])[0]
-    open_connection_request_2["client_guid"] = struct.unpack(">q", data[26:26 + 8])[0]
+    open_connection_request_2["client_guid"] = struct.unpack(">Q", data[26:26 + 8])[0]
 
 def write_open_connection_request_2():
     server_address = open_connection_request_2["server_address"]
@@ -254,13 +254,13 @@ def write_open_connection_request_2():
     buffer += open_connection_request_2["magic"]
     buffer += write_address(server_address[0], server_address[1], server_address[2])
     buffer += struct.pack(">H", open_connection_request_2["mtu_size"])
-    buffer += struct.pack(">q", open_connection_request_2["client_guid"])
+    buffer += struct.pack(">Q", open_connection_request_2["client_guid"])
     return buffer
 
 def read_open_connection_reply_2(data):
     open_connection_reply_2["id"] = data[0]
     open_connection_reply_2["magic"] = data[1:1 + 16]
-    open_connection_reply_2["server_guid"] = struct.unpack(">q", data[17:17 + 8])[0]
+    open_connection_reply_2["server_guid"] = struct.unpack(">Q", data[17:17 + 8])[0]
     open_connection_reply_2["client_address"] = read_address(data[25:25 + 7])
     open_connection_reply_2["mtu_size"] = struct.unpack(">H", data[32:32 + 2])[0]
     open_connection_reply_2["use_security"] = struct.unpack(">B", data[34:34 + 1])[0]
@@ -269,7 +269,7 @@ def write_open_connection_reply_2():
     buffer = b""
     buffer += struct.pack(">B", open_connection_reply_2["id"])
     buffer += open_connection_reply_2["magic"]
-    buffer += struct.pack(">q", open_connection_reply_2["server_guid"])
+    buffer += struct.pack(">Q", open_connection_reply_2["server_guid"])
     buffer += write_address(open_connection_reply_2["client_address"])
     buffer += struct.pack(">H", open_connection_reply_2["mtu_size"])
     buffer += struct.pack(">B", open_connection_reply_2["use_security"])
@@ -277,15 +277,15 @@ def write_open_connection_reply_2():
 
 def read_connection_request(data):
     connection_request["id"] = data[0]
-    connection_request["client_guid"] = struct.unpack(">q", data[1:1 + 8])[0]
-    connection_request["request_time"] = struct.unpack(">q", data[9:9 + 8])[0]
+    connection_request["client_guid"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    connection_request["request_time"] = struct.unpack(">Q", data[9:9 + 8])[0]
     connection_request["use_security"] = struct.unpack(">B", data[17:17 + 1])[0]
 
 def write_connection_request():
     buffer = b""
     buffer += struct.pack(">B", connection_request["id"])
-    buffer += struct.pack(">q", connection_request["client_guid"])
-    buffer += struct.pack(">q", connection_request["request_time"])
+    buffer += struct.pack(">Q", connection_request["client_guid"])
+    buffer += struct.pack(">Q", connection_request["request_time"])
     buffer += struct.pack(">B", connection_request["use_security"])
     return buffer
 
@@ -297,9 +297,9 @@ def read_connection_request_accepted(data):
     for i in range(0, 20):
         connection_request_accepted["system_addresses"].append(read_address(data[offset:offset + 7]))
         offset += 7
-    connection_request_accepted["request_time"] = struct.unpack(">q", data[offset:offset + 8])[0]
+    connection_request_accepted["request_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
     offset += 8
-    connection_request_accepted["time"] = struct.unpack(">q", data[offset:offset + 8])[0]
+    connection_request_accepted["time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
     offset += 8
 
 def write_connection_request_accepted():
@@ -309,8 +309,8 @@ def write_connection_request_accepted():
     buffer += struct.pack(">B", connection_request_accepted["system_index"])
     for i in range(0, 10):
         buffer += write_address(connection_request_accepted["system_addresses"][i])
-    buffer += struct.pack(">q", connection_request_accepted["request_time"])
-    buffer += struct.pack(">q", connection_request_accepted["time"])
+    buffer += struct.pack(">Q", connection_request_accepted["request_time"])
+    buffer += struct.pack(">Q", connection_request_accepted["time"])
     return buffer
 
 def read_new_connection(data):
@@ -320,9 +320,9 @@ def read_new_connection(data):
     for i in range(0, 10):
         new_connection["system_addresses"].append(read_address(data[offset:offset + 7]))
         offset += 7
-    new_connection["ping_time"] = struct.unpack(">q", data[offset:offset + 8])[0]
+    new_connection["ping_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
     offset += 8
-    new_connection["pong_time"] = struct.unpack(">q", data[offset:offset + 8])[0]
+    new_connection["pong_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
     offset += 8
 
 def write_new_connection():
@@ -331,36 +331,36 @@ def write_new_connection():
     buffer += write_address(new_connection["address"])
     for i in range(0, 20):
         buffer += write_address(new_connection["system_addresses"][i])
-    buffer += struct.pack(">q", new_connection["ping_time"])
-    buffer += struct.pack(">q", new_connection["pong_time"])
+    buffer += struct.pack(">Q", new_connection["ping_time"])
+    buffer += struct.pack(">Q", new_connection["pong_time"])
     return buffer
 
 def read_invalid_protocol_version(data):
     invalid_protocol_version["id"] = data[0]
     invalid_protocol_version["protocol_version"] = data[1]
     invalid_protocol_version["magic"] = data[2:2 + 16]
-    invalid_protocol_version["server_guid"] = struct.unpack(">q", data[18:18 + 8])[0]
+    invalid_protocol_version["server_guid"] = struct.unpack(">Q", data[18:18 + 8])[0]
 
 def write_invalid_protocol_version():
     buffer = b""
     buffer += struct.pack(">B", invalid_protocol_version["id"])
     buffer += struct.pack(">B", invalid_protocol_version["protocol_version"])
     buffer += invalid_protocol_version["magic"]
-    buffer += struct.pack(">q", invalid_protocol_version["server_guid"])
+    buffer += struct.pack(">Q", invalid_protocol_version["server_guid"])
     return buffer
 
 def read_unconnected_pong(data):
     unconnected_pong["id"] = data[0]
-    unconnected_pong["time"] = struct.unpack(">q", data[1:1 + 8])[0]
-    unconnected_pong["server_guid"] = struct.unpack(">q", data[9:9 + 8])
+    unconnected_pong["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    unconnected_pong["server_guid"] = struct.unpack(">Q", data[9:9 + 8])
     unconnected_pong["magic"] = data[17:17 + 16]
     unconnected_pong["data"] = data[35:35 + struct.unpack(">H", data[33:33 + 2])[0]].decode()
 
 def write_unconnected_pong():
     buffer = b""
     buffer += struct.pack(">B", unconnected_pong["id"])
-    buffer += struct.pack(">q", unconnected_pong["time"])
-    buffer += struct.pack(">q", unconnected_pong["server_guid"])
+    buffer += struct.pack(">Q", unconnected_pong["time"])
+    buffer += struct.pack(">Q", unconnected_pong["server_guid"])
     buffer += unconnected_pong["magic"]
     buffer += struct.pack(">H", len(unconnected_pong["data"]))
     buffer += unconnected_pong["data"].encode()
