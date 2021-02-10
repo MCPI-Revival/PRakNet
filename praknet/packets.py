@@ -167,62 +167,69 @@ def write_address(address):
         raise Exception(f"Unknown address version {version}")
 
 def read_connected_ping(data):
-    connected_ping["id"] = data[0]
-    connected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    return {
+        "id": data[0],
+        "time": struct.unpack(">Q", data[1:1 + 8])[0]
+    }
 
-def write_connected_ping():
-    buffer = b""
-    buffer += struct.pack(">B", connected_ping["id"])
-    buffer += struct.pack(">Q", connected_ping["time"])
-    return buffer
+def write_connected_ping(packet):
+    data = struct.pack(">B", packet["id"])
+    data += struct.pack(">Q", packet["time"])
+    return data
 
 def read_unconnected_ping(data):
-    unconnected_ping["id"] = data[0]
-    unconnected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
-    unconnected_ping["magic"] = data[9:9 + 16]
+    return {
+        "id": data[0],
+        "time": struct.unpack(">Q", data[1:1 + 8])[0],
+        "magic": data[9:9 + 16]
+    }
 
-def write_unconnected_ping():
-    buffer = b""
-    buffer += struct.pack(">B", unconnected_ping["id"])
-    buffer += struct.pack(">Q", unconnected_ping["time"])
-    buffer += unconnected_ping["magic"]
-    return buffer
+def write_unconnected_ping(packet):
+    data = struct.pack(">B", packet["id"])
+    data += struct.pack(">Q", packet["time"])
+    data += packet["magic"]
+    return data
 
 def read_unconnected_ping_open_connections(data):
-    unconnected_ping_open_connections["id"] = data[0]
-    unconnected_ping_open_connections["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
-    unconnected_ping_open_connections["magic"] = data[9:9 + 16]
+    return {
+        "id": data[0],
+        "time": struct.unpack(">Q", data[1:1 + 8])[0],
+        "magic": data[9:9 + 16]
+    }
 
-def write_unconnected_ping_open_connections():
-    buffer = b""
-    buffer += struct.pack(">B", unconnected_ping_open_connections["id"])
-    buffer += struct.pack(">Q", unconnected_ping_open_connections["time"])
-    buffer += unconnected_ping_open_connections["magic"]
-    return buffer
+def write_unconnected_ping_open_connections(packet):
+    data = struct.pack(">B", packet["id"])
+    data += struct.pack(">Q", packet["time"])
+    data += packet["magic"]
+    return data
 
 def read_connected_pong(data):
-    connected_ping["id"] = data[0]
-    connected_ping["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
+    return {
+        "id": data[0],
+        "time": struct.unpack(">Q", data[1:1 + 8])[0]
+    }
 
-def write_connected_pong():
-    buffer = b""
-    buffer += struct.pack(">B", connected_pong["id"])
-    buffer += struct.pack(">Q", connected_pong["time"])
-    return buffer
+def write_connected_pong(packet):
+    data = struct.pack(">B", packet["id"])
+    data += struct.pack(">Q", packet["time"])
+    return data
 
 def read_open_connection_request_1(data):
-    open_connection_request_1["id"] = data[0]
-    open_connection_request_1["magic"] = data[1:1 + 16]
-    open_connection_request_1["protocol_version"] = struct.unpack(">B", data[17:17 + 1])[0]
-    open_connection_request_1["mtu_size"] = len(data[18:]) + 46
+    return {
+        "id": data[0],
+        "magic": data[1:1 + 16],
+        "protocol_version": struct.unpack(">B", data[17:17 + 1])[0],
+        "mtu_size": len(data[18:]) + 46
+    }
 
-def write_open_connection_request_1():
-    buffer = b""
-    buffer += struct.pack(">B", open_connection_request_1["id"])
-    buffer += open_connection_request_1["magic"]
-    buffer += struct.pack(">B", open_connection_request_1["protocol_version"])
-    buffer += b"\x00" * (open_connection_request_1["mtu_size"] - 46)
-    return buffer
+def write_open_connection_request_1(packet):
+    data = struct.pack(">B", packet["id"])
+    data += packet["magic"]
+    data += struct.pack(">B", packet["protocol_version"])
+    data += b"\x00" * (packet["mtu_size"] - 46)
+    return data
+
+# I'll pause my development here for now #
 
 def read_open_connection_reply_1(data):
     open_connection_reply_1["id"] = data[0]
