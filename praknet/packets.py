@@ -254,25 +254,26 @@ def write_open_connection_request_2(packet):
     data += struct.pack(">Q", packet["client_guid"])
     return data
 
-# Just a small check point #
-
 def read_open_connection_reply_2(data):
-    open_connection_reply_2["id"] = data[0]
-    open_connection_reply_2["magic"] = data[1:1 + 16]
-    open_connection_reply_2["server_guid"] = struct.unpack(">Q", data[17:17 + 8])[0]
-    open_connection_reply_2["client_address"] = read_address(data[25:25 + 7])
-    open_connection_reply_2["mtu_size"] = struct.unpack(">H", data[32:32 + 2])[0]
-    open_connection_reply_2["use_security"] = struct.unpack(">B", data[34:34 + 1])[0]
+    packet = {
+        "id": data[0],
+        "magic": data[1:1 + 16],
+        "server_guid": struct.unpack(">Q", data[17:17 + 8])[0],
+        "client_address": read_address(data[25:25 + 7]),
+        "mtu_size": struct.unpack(">H", data[32:32 + 2])[0],
+        "use_security": struct.unpack(">B", data[34:34 + 1])[0]
+    }
 
-def write_open_connection_reply_2():
-    buffer = b""
-    buffer += struct.pack(">B", open_connection_reply_2["id"])
-    buffer += open_connection_reply_2["magic"]
-    buffer += struct.pack(">Q", open_connection_reply_2["server_guid"])
-    buffer += write_address(open_connection_reply_2["client_address"])
-    buffer += struct.pack(">H", open_connection_reply_2["mtu_size"])
-    buffer += struct.pack(">B", open_connection_reply_2["use_security"])
-    return buffer
+def write_open_connection_reply_2(packet):
+    data = struct.pack(">B", packet["id"])
+    data += packet["magic"]
+    data += struct.pack(">Q", packet["server_guid"])
+    data += write_address(packet["client_address"])
+    data += struct.pack(">H", packet["mtu_size"])
+    data += struct.pack(">B", packet["use_security"])
+    return data
+
+# Just a small check point #
 
 def read_connection_request(data):
     connection_request["id"] = data[0]
