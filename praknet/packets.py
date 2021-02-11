@@ -310,21 +310,22 @@ def write_open_connection_reply_2(packet):
     data += struct.pack(">B", packet["use_security"])
     return data
 
-# Just a small check point #
-
 def read_connection_request(data):
-    connection_request["id"] = data[0]
-    connection_request["client_guid"] = struct.unpack(">Q", data[1:1 + 8])[0]
-    connection_request["request_time"] = struct.unpack(">Q", data[9:9 + 8])[0]
-    connection_request["use_security"] = struct.unpack(">B", data[17:17 + 1])[0]
+    return {
+        "id": data[0],
+        "client_guid": struct.unpack(">Q", data[1:1 + 8])[0],
+        "request_time": struct.unpack(">Q", data[9:9 + 8])[0],
+        "use_security": struct.unpack(">B", data[17:17 + 1])[0]
+    }
 
-def write_connection_request():
-    buffer = b""
-    buffer += struct.pack(">B", connection_request["id"])
-    buffer += struct.pack(">Q", connection_request["client_guid"])
-    buffer += struct.pack(">Q", connection_request["request_time"])
-    buffer += struct.pack(">B", connection_request["use_security"])
-    return buffer
+def write_connection_request(packet):
+    data += struct.pack(">B", packet["id"])
+    data += struct.pack(">Q", packet["client_guid"])
+    data += struct.pack(">Q", packet["request_time"])
+    data += struct.pack(">B", packet["use_security"])
+    return data
+
+# Just a small check point #
 
 def read_connection_request_accepted(data):
     connection_request_accepted["id"] = data[0]
