@@ -70,7 +70,7 @@ def get_connection(address):
 
 def get_last_packet(address):
     connection = get_connection(address)
-    queue = connection["received_packets"]
+    queue = connection["sent_packets"]
     if len(queue) > 0:
         return queue[-1]
     
@@ -101,6 +101,7 @@ def packet_handler(data, address):
         if identifier == packets.nack["id"]:
             new_packet = copy(packets.frame_set)
             new_packet["sequence_number"] = connection["sequence_number"]
+            print(get_last_packet(address))
             new_packet["packets"].append(get_last_packet(address))
             socket.send(packets.write_frame_set(new_packet), address)
             send_ack_queue(address)
