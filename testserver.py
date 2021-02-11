@@ -21,8 +21,8 @@ def custom_handler(packet, address):
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 3
         send_packet["reliable_index"] = 0
-        send_packet["order_index"] = 0
-        send_packet["order_channel"] = 0
+        send_packet["order"]["index"] = 0
+        send_packet["order"]["channel"] = 0
         send_packet["body"] = new_packet
         server.send_frame(send_packet, address)
         server.options["entities"] += 1
@@ -34,8 +34,8 @@ def custom_handler(packet, address):
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 3
         send_packet["reliable_index"] = 0
-        send_packet["order_index"] = 0
-        send_packet["order_channel"] = 0
+        send_packet["order"]["index"] = 0
+        send_packet["order"]["channel"] = 0
         send_packet["body"] = new_packet
         server.send_frame(send_packet, address)
     elif identifier == 0x94:
@@ -47,8 +47,8 @@ def custom_handler(packet, address):
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 3
         send_packet["reliable_index"] = 0
-        send_packet["order_index"] = 0
-        send_packet["order_channel"] = 0
+        send_packet["order"]["index"] = 0
+        send_packet["order"]["channel"] = 0
         send_packet["body"] = new_packet
         server.send_frame(send_packet, address)
     elif identifier == 0x84:
@@ -58,8 +58,8 @@ def custom_handler(packet, address):
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 3
         send_packet["reliable_index"] = 0
-        send_packet["order_index"] = 0
-        send_packet["order_channel"] = 0
+        send_packet["order"]["index"] = 0
+        send_packet["order"]["channel"] = 0
         send_packet["body"] = new_packet
         server.broadcast_frame(send_packet)
         print(message)
