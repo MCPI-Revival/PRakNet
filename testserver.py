@@ -19,7 +19,10 @@ def custom_handler(packet, address):
         connection["username"] = packet["body"][3:3 + length].decode()
         new_packet = b"\x83\x00\x00\x00\x00"
         send_packet = copy(packets.frame)
-        send_packet["reliability"] = 0
+        send_packet["reliability"] = 3
+        send_packet["reliable_index"] = 0
+        send_packet["order_index"] = 0
+        send_packet["order_channel"] = 0
         send_packet["body"] = new_packet
         server.send_frame(send_packet, address)
         server.options["entities"] += 1
@@ -29,7 +32,10 @@ def custom_handler(packet, address):
         connection["yaw"] = 0
         connection["pitch"] = 0
         send_packet = copy(packets.frame)
-        send_packet["reliability"] = 0
+        send_packet["reliability"] = 3
+        send_packet["reliable_index"] = 0
+        send_packet["order_index"] = 0
+        send_packet["order_channel"] = 0
         send_packet["body"] = new_packet
         server.send_frame(send_packet, address)
     elif identifier == 0x94:
@@ -39,7 +45,10 @@ def custom_handler(packet, address):
         message = f"X: {connection['pos'][0]} Y: {connection['pos'][1]} Z: {connection['pos'][2]} YAW: {connection['yaw']} PITCH: {connection['pitch']}"
         new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
         send_packet = copy(packets.frame)
-        send_packet["reliability"] = 0
+        send_packet["reliability"] = 3
+        send_packet["reliable_index"] = 0
+        send_packet["order_index"] = 0
+        send_packet["order_channel"] = 0
         send_packet["body"] = new_packet
         server.send_frame(send_packet, address)
     elif identifier == 0x84:
@@ -47,7 +56,10 @@ def custom_handler(packet, address):
         message = f"{connection['username']} joined the game."
         new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
         send_packet = copy(packets.frame)
-        send_packet["reliability"] = 0
+        send_packet["reliability"] = 3
+        send_packet["reliable_index"] = 0
+        send_packet["order_index"] = 0
+        send_packet["order_channel"] = 0
         send_packet["body"] = new_packet
         server.broadcast_frame(send_packet)
         print(message)
