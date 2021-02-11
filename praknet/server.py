@@ -104,10 +104,10 @@ def packet_handler(data, address):
             print(get_last_packet(address))
             new_packet["packets"].append(get_last_packet(address))
             socket.send(packets.write_frame_set(new_packet), address)
-            send_ack_queue(address)
         elif identifier == packets.ack["id"]:
             pass
         elif 0x80 <= identifier <= 0x8f:
+            send_ack_queue(address)
             frame_set = packets.read_frame_set(data)
             for frame in frame_set["packets"]:
                 identifier = frame["body"][0]
