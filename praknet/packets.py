@@ -182,16 +182,15 @@ def read_address(data):
         str(~data[4] & 0xff)
     ])
     port = struct.unpack(">H", data[5:5 + 2])[0]
-    return (addr, port)
+    return (address, port)
 
 def write_address(address):
-    addr, port = address
     data = bytes([4])
-    parts = addr.split(".")
+    parts = address[0].split(".")
     assert len(parts) == 4, f"Expected address length: 4, got {parts_count}"
     for part in parts:
         data += bytes([~int(part) & 0xff])
-    data += struct.pack(">H", port)
+    data += struct.pack(">H", address[1])
     return data
 
 # Decode and Encode Packets
