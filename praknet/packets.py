@@ -325,31 +325,31 @@ def write_connection_request(packet):
     data += struct.pack(">B", packet["use_security"])
     return data
 
-# Just a small check point #
-
 def read_connection_request_accepted(data):
-    connection_request_accepted["id"] = data[0]
-    connection_request_accepted["client_address"] = read_address(data[1:1 + 7])
-    connection_request_accepted["system_index"] = struct.unpack(">B", data[8:8 + 1])[0]
+    packet = {
+        "id": data[0],
+        "client_address": read_address(data[1:1 + 7]),
+        "system_index": struct.unpack(">B", data[8:8 + 1])[0],
+        "system_addresses": [],
+        "request_time": struct.unpack(">Q", data[79:79 + 8])[0],
+        "time": struct.unpack(">Q", data[87:87 + 8])[0]
+    }
     offset = 9
     for i in range(0, 20):
-        connection_request_accepted["system_addresses"].append(read_address(data[offset:offset + 7]))
+        packet["system_addresses"].append(read_address(data[offset:offset + 7]))
         offset += 7
-    connection_request_accepted["request_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
-    offset += 8
-    connection_request_accepted["time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
-    offset += 8
 
-def write_connection_request_accepted():
-    buffer = b""
-    buffer += struct.pack(">B", connection_request_accepted["id"])
-    buffer += write_address(connection_request_accepted["client_address"])
-    buffer += struct.pack(">B", connection_request_accepted["system_index"])
+def write_connection_request_accepted(packet):
+    data = struct.pack(">B", packet["id"])
+    data += write_address(packet["client_address"])
+    data += struct.pack(">B", packet["system_index"])
     for i in range(0, 10):
-        buffer += write_address(connection_request_accepted["system_addresses"][i])
-    buffer += struct.pack(">Q", connection_request_accepted["request_time"])
-    buffer += struct.pack(">Q", connection_request_accepted["time"])
-    return buffer
+        data += write_address(packet["system_addresses"][i])
+    data += struct.pack(">Q", packet["request_time"])
+    data += struct.pack(">Q", packet["time"])
+    return data
+
+# Just a small check point #
 
 def read_new_connection(data):
     new_connection["id"] = data[0]
