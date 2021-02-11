@@ -220,19 +220,6 @@ def write_unconnected_ping(packet):
     data += packet["magic"]
     return data
 
-def read_unconnected_ping_open_connections(data):
-    return {
-        "id": data[0],
-        "time": struct.unpack(">Q", data[1:1 + 8])[0],
-        "magic": data[9:9 + 16]
-    }
-
-def write_unconnected_ping_open_connections(packet):
-    data = bytes([packet["id"]])
-    data += struct.pack(">Q", packet["time"])
-    data += packet["magic"]
-    return data
-
 def read_connected_pong(data):
     return {
         "id": data[0],
