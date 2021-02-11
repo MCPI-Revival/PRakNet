@@ -52,7 +52,7 @@ def add_connection(address):
         "mtu_size": 0,
         "address": address,
         "is_connected": False,
-        "received_packets": [],
+        "sent_packets": [],
         "sequence_number": 0
     }
 
@@ -69,22 +69,11 @@ def get_connection(address):
 def set_option(option, value):
     options[option] = value
 
-def receive_packet(data, address):
-    connection = get_connection(address[0], address[1])
-    connection["received_packets"].append(data)
-    if connection["sequence_number"] >= 16777216:
-        connection["received_packets"] = []
-        connection["sequence_number"] = 0
-    else:
-        connection["sequence_number"] += 1
-
 def get_last_packet(address):
     connection = get_connection(address[0], address[1])
     queue = connection["received_packets"]
     if len(queue) > 0:
         return queue[-1]
-    else:
-        return b""
     
 def send_ack_queue(address):
     connection = get_connection(address)
@@ -92,26 +81,18 @@ def send_ack_queue(address):
     new_packet["packets"].append(connection["sequence_number"])
     socket.send_buffer(packets.write_acknowledgement(new_packet), address)
     
-def send_encapsulated(data, address, reliability, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
+def send_frame(packet, address):
     connection = get_connection(address[0], address[1])
-    packets.encapsulated["body"] = data
-    packets.encapsulated["flags"] = reliability
-    packets.encapsulated["sequence_order"] = connection["sequence_order"]
-    packets.encapsulated["reliable_frame_index"] = reliable_frame_index
-    packets.encapsulated["sequenced_frame_index"] = sequenced_frame_index
-    packets.encapsulated["order"]["ordered_frame_index"] = ordered_frame_index
-    packets.encapsulated["order"]["order_channel"] = order_channel
-    packets.encapsulated["fragment"]["compound_size"] = compound_size
-    packets.encapsulated["fragment"]["compound_id"] = compound_id
-    packets.encapsulated["fragment"]["index"] = compound_index
-    packet = packets.write_encapsulated()
-    socket.send_buffer(packet, address)
+    new_packet = copy(packets.frame_set)
+    new_packet["packets"].append(packet)
+    socket.send(packets.write_frame_set(new_packet), address)
     send_ack_queue(address)
-    add_to_queue(packet, address)
+    connection["sent_packets"].append(packet)
+    connection["sequence_number"] += 1
 
-def broadcast_encapsulated(data, reliability, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
+def broadcast_frame(packet, address):
     for connection in connections.values():
-        send_encapsulated(data, (connection["address"][0], connection["address"][1]), reliability, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0)
+        send_frame(packet, connection["address"])
     
 def packet_handler(data, address):
     id = data[0]
@@ -159,9 +140,9 @@ def packet_handler(data, address):
         socket.send_buffer(handler.handle_open_connection_request_2(data, (address[0], address[1], 4)), address)
 
 def run():
-    socket.create_socket((options["ip"], options["port"]))
+    socket.create((options["ip"], options["port"]))
     while True:
-        recv = socket.receive_buffer()
+        recv = socket.receive()
         if recv != None:
-            data, addr = recv
-            packet_handler(data, addr)
+            data, address = recv
+            packet_handler(data, address)
