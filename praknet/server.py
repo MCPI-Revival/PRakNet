@@ -99,12 +99,7 @@ def packet_handler(data, address):
     connection = get_connection(address)
     if connection != None:
         if identifier == packets.nack["id"]:
-            new_packet = copy(packets.frame_set)
-            new_packet["sequence_number"] = connection["sequence_number"]
-            new_packet["packets"].append(get_last_packet(address))
-            socket.send(packets.write_frame_set(new_packet), address)
-        elif identifier == packets.ack["id"]:
-            pass
+            send_frame(get_last_packet(address), address)
         elif 0x80 <= identifier <= 0x8f:
             send_ack_queue(address)
             frame_set = packets.read_frame_set(data)
