@@ -43,7 +43,7 @@ options = {
     "server_guid": struct.unpack(">Q", os.urandom(8))[0],
     "custom_handler": lambda data, addr: 0,
     "accepted_raknet_protocols": [5],
-    "debug": False
+    "debug": True
 }
 
 connections = {}
@@ -101,7 +101,6 @@ def packet_handler(data, address):
         if identifier == packets.nack["id"]:
             new_packet = copy(packets.frame_set)
             new_packet["sequence_number"] = connection["sequence_number"]
-            print(get_last_packet(address))
             new_packet["packets"].append(get_last_packet(address))
             socket.send(packets.write_frame_set(new_packet), address)
         elif identifier == packets.ack["id"]:
@@ -127,7 +126,7 @@ def packet_handler(data, address):
                                 print(packet)
                             connection["is_connected"] = True
                     elif identifier == packets.connection_closed["id"]:
-                        remove_connection(address[0], address[1])
+                        remove_connection(address)
                     elif identifier == packets.connected_ping["id"]:
                         body = handler.handle_connected_ping(frame["body"])
                         packet = copy(packets.frame)
