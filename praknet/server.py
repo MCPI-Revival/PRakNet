@@ -94,10 +94,10 @@ def packet_handler(data, address):
         if identifier == packets.nack["id"]:
             send_frame(get_last_packet(address), address)
         elif 0x80 <= identifier <= 0x8f:
-            new_packet = copy(packets.ack)
-            # new_packet["packets"].append() Todo
-            socket.send(packets.write_acknowledgement(new_packet), address)
             frame_set = packets.read_frame_set(data)
+            new_packet = copy(packets.ack)
+            new_packet["packets"].append(frame_set["sequence_number"])
+            socket.send(packets.write_acknowledgement(new_packet), address)
             for frame in frame_set["packets"]:
                 identifier = frame["body"][0]
                 if options["debug"]:
