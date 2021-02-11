@@ -30,7 +30,6 @@
 ################################################################################
 
 from praknet import messages
-from praknet import reliability
 import struct
 
 # Packet templates
@@ -514,58 +513,22 @@ def read_frame(data):
     packet["length"] += body_length
     return packet
 
-# Just a small check point #
-
-def read_encapsulated(data):
-    offset = 1
-    encapsulated["sequence_order"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
-    offset += 3
-    flags = struct.unpack(">B", data[offset:offset + 1])[0]
-    offset += 1
-    encapsulated["flags"] = (flags & 224) >> 5
-    encapsulated["is_fragmented"] = (flags & 0x10) > 0
-    encapsulated["length"] = struct.unpack(">H", data[offset:offset + 2])[0] >> 3
-    offset += 2
-    if reliability.is_reliable(encapsulated["flags"]):
-        encapsulated["reliable_frame_index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
-        offset += 3
-    if reliability.is_sequenced(encapsulated["flags"]):
-        encapsulated["sequenced_frame_index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
-        offset += 3
-    if reliability.is_sequenced_or_ordered(encapsulated["flags"]):
-        encapsulated["order"]["ordered_frame_index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
-        offset += 3
-        encapsulated["order"]["order_channel"] = struct.unpack(">B", data[offset:offset + 1])[0]
-        offset += 1
-    if encapsulated["is_fragmented"]:
-        encapsulated["fragment"]["compound_size"] = struct.unpack('>l', data[offset:offset + 4])[0]
-        offset += 4
-        encapsulated["fragment"]["compound_id"] = struct.unpack(">H", data[offset:offset + 2])[0]
-        offset += 2
-        encapsulated["fragment"]["index"] = struct.unpack('>l', data[offset:offset + 4])[0]
-        offset += 4
-    encapsulated["body"] = data[offset:offset + encapsulated["length"]]
-    offset += encapsulated["length"]
-
-def write_encapsulated():
-    buffer = b""
-    buffer += b"\x80"
-    buffer += struct.pack("<L", encapsulated["sequence_order"])[0:-1]
-    flags = encapsulated["flags"] << 5
-    if encapsulated["is_fragmented"]:
+def write_frame(packet):
+    flags = packet["reliability"] << 5
+    if packet["is_fragmented"]:
         flags |= 0x10
-    buffer += struct.pack(">B", flags)
-    buffer += struct.pack(">H", len(encapsulated["body"]) << 3)
-    if reliability.is_reliable(encapsulated["flags"]):
-        buffer += struct.pack("<L", encapsulated["reliable_frame_index"])[0:-1]
-    if reliability.is_sequenced(encapsulated["flags"]):
-        buffer += struct.pack("<L", encapsulated["sequenced_frame_index"])[0:-1]
-    if reliability.is_sequenced_or_ordered(encapsulated["flags"]):
-        buffer += struct.pack("<L", encapsulated["order"]["ordered_frame_index"])[0:-1]
-        buffer += struct.pack(">B", encapsulated["order"]["order_channel"])
-    if encapsulated["is_fragmented"]:
-        buffer += struct.pack(">l", encapsulated["fragment"]["compound_size"])
-        buffer += struct.pack(">H", encapsulated["fragment"]["compound_id"])
-        buffer += struct.pack(">l", encapsulated["fragment"]["index"])
-    buffer += encapsulated["body"]
-    return buffer
+    data = bytes([flags])
+    data += struct.pack(">H", len(packet["body"]) << 3)
+    if 2 <= packet["reliability"] <= 7 and packet["reliability"] != 5:
+        data += struct.pack("<L", packet["reliable_index"])[0:-1]
+    if packet["reliability"] == 1 or packet["reliability"] == 4:
+        data += struct.pack("<L", packet["sequence_index"])[0:-1]
+    if 1 <= packet["reliability"] <= 4 and packet["reliability"] != 2 or packet["reliability"] == 7:
+        data += struct.pack("<L", packet["order"]["index"])[0:-1]
+        data += bytes([packet["order"]["channel"]])
+    if packet["is_fragmented"]:
+        data += struct.pack(">l", packet["fragment"]["size"])
+        data += struct.pack(">H", packet["fragment"]["id"])
+        data += struct.pack(">l", packet["fragment"]["index"])
+    data += packet["body"]
+    return data
