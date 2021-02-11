@@ -1,6 +1,5 @@
 import os
 from praknet import handler
-from praknet import messages
 from praknet import packets
 from praknet import socket
 import struct
@@ -17,8 +16,6 @@ options = {
 status = {
     "connecting": 0,
     "connected": 1,
-    "disconnecting": 2,
-    "disconnected": 3
 }
 
 connections = {}
