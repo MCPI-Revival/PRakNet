@@ -20,9 +20,6 @@ def custom_handler(packet, address):
         new_packet = b"\x83\x00\x00\x00\x00"
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 0
-        send_packet["reliable_index"] = 0
-        send_packet["order"]["index"] = 0
-        send_packet["order"]["channel"] = 0
         send_packet["body"] = new_packet
         server.send_frame(send_packet, address)
         server.options["entities"] += 1
@@ -33,9 +30,6 @@ def custom_handler(packet, address):
         connection["pitch"] = 0
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 0
-        send_packet["reliable_index"] = 0
-        send_packet["order"]["index"] = 0
-        send_packet["order"]["channel"] = 0
         send_packet["body"] = new_packet
         server.send_frame(send_packet, address)
     elif identifier == 0x94:
@@ -46,20 +40,13 @@ def custom_handler(packet, address):
         new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 0
-        send_packet["reliable_index"] = 0
-        send_packet["order"]["index"] = 0
-        send_packet["order"]["channel"] = 0
         send_packet["body"] = new_packet
         server.send_frame(send_packet, address)
     elif identifier == 0x84:
-        server.send_ack_queue(address)
         message = f"{connection['username']} joined the game."
         new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 0
-        send_packet["reliable_index"] = 0
-        send_packet["order"]["index"] = 0
-        send_packet["order"]["channel"] = 0
         send_packet["body"] = new_packet
         server.broadcast_frame(send_packet)
         print(message)
