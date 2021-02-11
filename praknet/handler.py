@@ -70,18 +70,18 @@ def handle_open_connection_request_2(data, address):
     server.get_connection(address[0], address[1])["mtu_size"] = packet["mtu_size"]
     return packets.write_open_connection_reply_2(new_packet)
 
-def handle_connection_request(data, connection):
-    packets.read_connection_request(data)
-    packets.connection_request_accepted["client_address"] = connection["address"]
-    packets.connection_request_accepted["system_index"] = 0
-    packets.connection_request_accepted["system_addresses"] = []
-    for i in range(0, 20):
-        packets.connection_request_accepted["system_addresses"].append(("0.0.0.0", 0, 4))
-    packets.connection_request_accepted["request_time"] = packets.connection_request["request_time"]
-    packets.connection_request_accepted["time"] = int(time_now())
-    return packets.write_connection_request_accepted()
+def handle_connection_request(data, address):
+    packet = packets.read_connection_request(data)
+    new_packet = copy(packets.connection_request_accepted)
+    new_packet["client_address"] = address
+    new_packet["system_index"] = 0
+    new_packet["system_addresses"] = [("255.255.255.255", 19132)] * 10
+    new_packet["request_time"] = packet["request_time"]
+    new_packet["time"] = int(time())
+    return packets.write_connection_request_accepted(new_packet)
 
 def handle_connected_ping(data):
-    packets.read_connected_ping(data)
-    packets.connected_pong["time"] = packets.connected_ping["time"]
-    return packets.write_connected_pong()
+    packet = packets.read_connected_ping(data)
+    new_packet = copy(packets.connected_pong)
+    new_packet["time"] = packet["time"]
+    return packets.write_connected_pong(new_packet)
