@@ -35,7 +35,6 @@ def custom_handler(data, address):
         new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
         server.send_encapsulated(new_packet, address, 0)
     elif id == 0x84:
-        server.send_ack_queue(address)
         message = f"{connection['username']} joined the game."
         new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
         server.broadcast_encapsulated(new_packet, 0)
