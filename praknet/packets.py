@@ -150,21 +150,25 @@ ack = {
     "packets": []
 }
 
-encapsulated = {
+frame_set = {
+    "id": 0x80,
+    "sequence_number": None,
+    "packets": []
+}
+
+frame = {
+    "reliability": None,
     "is_fragmented": None,
-    "need_ack": None,
-    "sequence_order": None,
-    "flags": None,
     "length": None,
-    "reliable_frame_index": None,
-    "sequenced_frame_index": None,
+    "reliable_index": None,
+    "sequence_index": None,
     "order": {
-        "ordered_frame_index": None,
-        "order_channel": None
+        "index": None,
+        "channel": None
     },
     "fragment": {
-        "compound_size": None,
-        "compound_id": None,
+        "size": None,
+        "id": None,
         "index": None
     },
     "body": None
@@ -468,6 +472,47 @@ def write_acknowledgement(packet):
         records += 1
     data = data[0:1] + struct.pack(">H", records) + data[1:]
     return data
+
+def read_frame(data):
+    packet = {
+        "reliability": (data[0] & 224) >> 5,
+        "is_fragmented": (data[0] & 0x10) > 0,
+        "length": 3,
+        "reliable_index": None,
+        "sequence_index": None,
+        "order": {
+            "index": None,
+            "channel": None
+        },
+        "fragment": {
+            "size": None,
+            "id": None,
+            "index": None
+        },
+        "body": None
+    }
+    body_length = struct.unpack(">H", data[1:1 + 2])[0] >> 3
+    if 2 <= packet["reliability"] <= 7 and packet["reliability"] != 5:
+        packet["reliable_index"] = struct.unpack('<L', data[packet["length"]:packet["length"] + 3] + b'\x00')[0]
+        packet["length"] += 3
+    if packet["reliability"] == 1 or packet["reliability"] == 4:
+        packet["sequence_index"] = struct.unpack('<L', data[packet["length"]:packet["length"] + 3] + b'\x00')[0]
+        packet["length"] += 3
+    if 1 <= packet["reliability"] <= 4 and packet["reliability"] != 2 or packet["reliability"] == 7:
+        packet["order"]["index"] = struct.unpack('<L', data[packet["length"]:packet["length"] + 3] + b'\x00')[0]
+        packet["length"] += 3
+        packet["order"]["channel"] = data[packet["length"]]
+        packet["length"] += 1
+    if packet["is_fragmented"]:
+        packet["fragment"]["size"] = struct.unpack('>l', data[packet["length"]:packet["length"] + 4])[0]
+        packet["length"] += 4
+        packet["fragment"]["id"] = struct.unpack('>H', data[packet["length"]:packet["length"] + 2])[0]
+        packet["length"] += 2
+        packet["fragment"]["index"] = struct.unpack('>l', data[packet["length"]:packet["length"] + 4])[0]
+        packet["length"] += 4
+    packet["body"] = data[packet["length"]:packet["length"] + body_length]
+    packet["length"] += body_length
+    return packet
 
 # Just a small check point #
 
