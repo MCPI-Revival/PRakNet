@@ -83,6 +83,7 @@ def send_ack_queue(address):
 def send_frame(packet, address):
     connection = get_connection(address)
     new_packet = copy(packets.frame_set)
+    new_packet["sequence_number"] = connection["sequence_number"]
     new_packet["packets"].append(packet)
     socket.send(packets.write_frame_set(new_packet), address)
     send_ack_queue(address)
