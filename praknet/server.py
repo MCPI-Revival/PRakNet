@@ -29,6 +29,7 @@
 #                                                                              #
 ################################################################################
 
+from copy import copy
 import os
 from praknet import handler
 from praknet import packets
@@ -41,7 +42,8 @@ options = {
     "port": 19132,
     "server_guid": struct.unpack(">Q", os.urandom(8))[0],
     "custom_handler": lambda data, addr: 0,
-    "accepted_raknet_protocols": [5]
+    "accepted_raknet_protocols": [5],
+    "debug": False
 }
 
 connections = {}
@@ -70,7 +72,7 @@ def set_option(option, value):
     options[option] = value
 
 def get_last_packet(address):
-    connection = get_connection(address[0], address[1])
+    connection = get_connection(address)
     queue = connection["received_packets"]
     if len(queue) > 0:
         return queue[-1]
@@ -82,7 +84,7 @@ def send_ack_queue(address):
     socket.send_buffer(packets.write_acknowledgement(new_packet), address)
     
 def send_frame(packet, address):
-    connection = get_connection(address[0], address[1])
+    connection = get_connection(address)
     new_packet = copy(packets.frame_set)
     new_packet["packets"].append(packet)
     socket.send(packets.write_frame_set(new_packet), address)
