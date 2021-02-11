@@ -532,3 +532,23 @@ def write_frame(packet):
         data += struct.pack(">l", packet["fragment"]["index"])
     data += packet["body"]
     return data
+
+def read_frame_set(data):
+    packet = {
+        "id": data[0],
+        "sequence_number": struct.unpack('<L', data[1:1 + 3] + b'\x00')[0],
+        "packets": []
+    }
+    offset = 4
+    while len(data) <= offset or offset < 0:
+        packet = read_frame(data[offset:])
+        packet["packets"].append(packet)
+        offset += packet["length"]
+    return packet
+
+def write_frame_set(packet):
+    data = bytes([packet["id"]])
+    data += struct.pack("<L", packet["sequence_number"])[0:-1]
+    for packet in packet["packets"]:
+        data += write_frame(packet)
+    return data
