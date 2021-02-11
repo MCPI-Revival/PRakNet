@@ -36,7 +36,7 @@ from praknet import socket
 import struct
 
 options = {
-    "name": "",
+    "name": "MCCPP;Demo;Default PRakNet motd",
     "ip": "0.0.0.0",
     "port": 19132,
     "server_guid": struct.unpack(">Q", os.urandom(8))[0],
@@ -52,8 +52,8 @@ def add_connection(address):
         "mtu_size": 0,
         "address": address,
         "is_connected": False,
-        "packets_queue": [],
-        "sequence_order": 0
+        "received_packets": [],
+        "sequence_number": 0
     }
 
 def remove_connection(address):
@@ -69,28 +69,28 @@ def get_connection(address):
 def set_option(option, value):
     options[option] = value
 
-def add_to_queue(data, address):
+def receive_packet(data, address):
     connection = get_connection(address[0], address[1])
-    connection["packets_queue"].append(data)
-    if connection["sequence_order"] >= 16777216:
-        connection["packets_queue"] = []
-        connection["sequence_order"] = 0
+    connection["received_packets"].append(data)
+    if connection["sequence_number"] >= 16777216:
+        connection["received_packets"] = []
+        connection["sequence_number"] = 0
     else:
-        connection["sequence_order"] += 1
+        connection["sequence_number"] += 1
 
 def get_last_packet(address):
     connection = get_connection(address[0], address[1])
-    queue = connection["packets_queue"]
+    queue = connection["received_packets"]
     if len(queue) > 0:
         return queue[-1]
     else:
         return b""
     
 def send_ack_queue(address):
-    connection = get_connection(address[0], address[1])
-    packets.ack["packets"] = []
-    packets.ack["packets"].append(connection["sequence_order"])
-    socket.send_buffer(packets.write_ack(), address)
+    connection = get_connection(address)
+    new_packet = copy(packets.ack)
+    new_packet["packets"].append(connection["sequence_number"])
+    socket.send_buffer(packets.write_acknowledgement(new_packet), address)
     
 def send_encapsulated(data, address, reliability, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
     connection = get_connection(address[0], address[1])
