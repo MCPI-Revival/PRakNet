@@ -151,13 +151,12 @@ ack = {
 frame_set = {
     "id": 0x80,
     "sequence_number": None,
-    "packets": []
+    "frame": None
 }
 
 frame = {
     "reliability": None,
     "is_fragmented": None,
-    "length": None,
     "reliable_index": None,
     "sequence_index": None,
     "order": {
@@ -461,7 +460,6 @@ def read_frame(data):
     packet = {
         "reliability": (data[0] & 224) >> 5,
         "is_fragmented": (data[0] & 0x10) > 0,
-        "length": 3,
         "reliable_index": None,
         "sequence_index": None,
         "order": {
@@ -475,27 +473,28 @@ def read_frame(data):
         },
         "body": None
     }
-    body_length = struct.unpack(">H", data[1:1 + 2])[0] >> 3
+    offset = 3
     if 2 <= packet["reliability"] <= 7 and packet["reliability"] != 5:
         packet["reliable_index"] = struct.unpack('<L', data[packet["length"]:packet["length"] + 3] + b'\x00')[0]
         packet["length"] += 3
     if packet["reliability"] == 1 or packet["reliability"] == 4:
-        packet["sequence_index"] = struct.unpack('<L', data[packet["length"]:packet["length"] + 3] + b'\x00')[0]
-        packet["length"] += 3
+        packet["sequence_index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+        offset += 3
     if 1 <= packet["reliability"] <= 4 and packet["reliability"] != 2 or packet["reliability"] == 7:
-        packet["order"]["index"] = struct.unpack('<L', data[packet["length"]:packet["length"] + 3] + b'\x00')[0]
-        packet["length"] += 3
-        packet["order"]["channel"] = data[packet["length"]]
-        packet["length"] += 1
+        packet["order"]["index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+        offset += 3
+        packet["order"]["channel"] = data[offset]
+        offset += 1
     if packet["is_fragmented"]:
-        packet["fragment"]["size"] = struct.unpack('>l', data[packet["length"]:packet["length"] + 4])[0]
-        packet["length"] += 4
-        packet["fragment"]["id"] = struct.unpack('>H', data[packet["length"]:packet["length"] + 2])[0]
-        packet["length"] += 2
-        packet["fragment"]["index"] = struct.unpack('>l', data[packet["length"]:packet["length"] + 4])[0]
-        packet["length"] += 4
-    packet["body"] = data[packet["length"]:packet["length"] + body_length]
-    packet["length"] += body_length
+        packet["fragment"]["size"] = struct.unpack('>l', data[offset:offset + 4])[0]
+        offset += 4
+        packet["fragment"]["id"] = struct.unpack('>H', offset:offset + 2])[0]
+        offset += 2
+        packet["fragment"]["index"] = struct.unpack('>l', data[offset:offset + 4])[0]
+        offset += 4
+    length = struct.unpack(">H", data[1:1 + 2])[0] >> 3
+    packet["body"] = data[offset:offset + length]
+    offset += length
     return packet
 
 def write_frame(packet):
@@ -519,24 +518,14 @@ def write_frame(packet):
     return data
 
 def read_frame_set(data):
-    packet = {
+    return {
         "id": data[0],
         "sequence_number": struct.unpack('<L', data[1:1 + 3] + b'\x00')[0],
-        "packets": []
+        "frame": read_frame(data[offset:])
     }
-    offset = 4
-    while True:
-        try:
-            frame = read_frame(data[offset:])
-            packet["packets"].append(frame)
-            offset += frame["length"]
-        except:
-            break
-    return packet
 
 def write_frame_set(packet):
     data = bytes([packet["id"]])
     data += struct.pack("<L", packet["sequence_number"])[0:-1]
-    for frame in packet["packets"]:
-        data += write_frame(frame)
+    data += write_frame(packet["frame"])
     return data
