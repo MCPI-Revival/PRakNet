@@ -1,15 +1,16 @@
-from praknet import messages
 from praknet import packets
 from praknet import server
-from time import time as time_now
+from time import time
+from copy import copy
 
 def handle_unconnected_ping(data):
-    packets.read_unconnected_ping(data)
-    packets.unconnected_pong["time"] = packets.unconnected_ping["time"]
-    packets.unconnected_pong["server_guid"] = server.options["server_guid"]
-    packets.unconnected_pong["magic"] = packets.unconnected_ping["magic"]
-    packets.unconnected_pong["data"] = server.options["name"]
-    return packets.write_unconnected_pong()
+    packet = packets.read_unconnected_ping(data)
+    new_packet = copy(packets.unconnected_pong)
+    new_packet["time"] = packet["time"]
+    new_packet["server_guid"] = server.options["server_guid"]
+    new_packet["magic"] = packet["magic"]
+    new_packet["data"] = server.options["name"]
+    return packets.write_unconnected_pong(new_packet)
 
 def handle_unconnected_ping_open_connections(data):
     packets.read_unconnected_ping_open_connections(data)
