@@ -355,7 +355,7 @@ def read_new_connection(data):
         "id": data[0],
         "address": read_address(data[1:1 + 7]),
         "system_addresses": [],
-        "ping_time": struct.unpack(">Q", data[78:78 + 8])[0]
+        "ping_time": struct.unpack(">Q", data[78:78 + 8])[0],
         "pong_time": struct.unpack(">Q", data[86:86 + 8])[0]
     }
     offset = 8
