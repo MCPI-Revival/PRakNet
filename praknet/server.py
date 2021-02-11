@@ -89,7 +89,7 @@ def send_frame(packet, address):
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1
 
-def broadcast_frame(packet, address):
+def broadcast_frame(packet):
     for connection in connections.values():
         send_frame(packet, connection["address"])
     
