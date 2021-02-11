@@ -133,7 +133,7 @@ def packet_handler(data, address):
     elif identifier == packets.unconnected_ping["id"]:
         socket.send(handler.handle_unconnected_ping(data), address)
     elif identifier == packets.unconnected_ping_open_connections["id"]:
-        socket.send(handler.handle_unconnected_ping_open_connections(data), address)
+        socket.send(handler.handle_unconnected_ping(data), address)
     elif identifier == packets.open_connection_request_1["id"]:
         socket.send(handler.handle_open_connection_request_1(data), address)
     elif identifier == packets.open_connection_request_2["id"]:
