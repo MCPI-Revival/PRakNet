@@ -338,6 +338,7 @@ def read_connection_request_accepted(data):
     for i in range(0, 20):
         packet["system_addresses"].append(read_address(data[offset:offset + 7]))
         offset += 7
+    return packet
 
 def write_connection_request_accepted(packet):
     data = struct.pack(">B", packet["id"])
@@ -349,29 +350,30 @@ def write_connection_request_accepted(packet):
     data += struct.pack(">Q", packet["time"])
     return data
 
-# Just a small check point #
-
 def read_new_connection(data):
-    new_connection["id"] = data[0]
-    new_connection["address"] = read_address(data[1:1 + 7])
+    packet = {
+        "id": data[0],
+        "address": read_address(data[1:1 + 7]),
+        "system_addresses": [],
+        "ping_time": struct.unpack(">Q", data[78:78 + 8])[0]
+        "pong_time": struct.unpack(">Q", data[86:86 + 8])[0]
+    }
     offset = 8
     for i in range(0, 10):
-        new_connection["system_addresses"].append(read_address(data[offset:offset + 7]))
+        packet["system_addresses"].append(read_address(data[offset:offset + 7]))
         offset += 7
-    new_connection["ping_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
-    offset += 8
-    new_connection["pong_time"] = struct.unpack(">Q", data[offset:offset + 8])[0]
-    offset += 8
+    return packet
 
-def write_new_connection():
-    buffer = b""
-    buffer += struct.pack(">B", new_connection["id"])
-    buffer += write_address(new_connection["address"])
-    for i in range(0, 20):
-        buffer += write_address(new_connection["system_addresses"][i])
-    buffer += struct.pack(">Q", new_connection["ping_time"])
-    buffer += struct.pack(">Q", new_connection["pong_time"])
-    return buffer
+def write_new_connection(packet):
+    data = struct.pack(">B", packet["id"])
+    data += write_address(packet["address"])
+    for i in range(0, 10):
+        data += write_address(packet["system_addresses"][i])
+    data += struct.pack(">Q", packet["ping_time"])
+    data += struct.pack(">Q", packet["pong_time"])
+    return data
+
+# Just a small check point #
 
 def read_invalid_protocol_version(data):
     invalid_protocol_version["id"] = data[0]
