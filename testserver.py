@@ -1,3 +1,4 @@
+from copy import copy
 from praknet import packets
 from praknet import server
 import struct
@@ -20,7 +21,7 @@ def custom_handler(packet, address):
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 0
         send_packet["body"] = new_packet
-        send_frame(send_packet, address)
+        server.send_frame(send_packet, address)
         server.options["entities"] += 1
         connection["entity_id"] = server.options["entities"]
         new_packet = b"\x87\x01\x02\x03\x04\x00\x00\x00\x00\x00\x00\x00\x01" + struct.pack(">l", server.options["entities"]) + encode_pos([0, 4, 0])
@@ -30,7 +31,7 @@ def custom_handler(packet, address):
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 0
         send_packet["body"] = new_packet
-        send_frame(send_packet, address)
+        server.send_frame(send_packet, address)
     elif identifier == 0x94:
         connection["pos"] = decode_pos(packet["body"][5:5 + 12])
         connection["yaw"] = struct.unpack(">f", packet["body"][17:17 + 4])[0]
@@ -40,7 +41,7 @@ def custom_handler(packet, address):
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 0
         send_packet["body"] = new_packet
-        send_frame(send_packet, address)
+        server.send_frame(send_packet, address)
     elif identifier == 0x84:
         server.send_ack_queue(address)
         message = f"{connection['username']} joined the game."
@@ -48,7 +49,7 @@ def custom_handler(packet, address):
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 0
         send_packet["body"] = new_packet
-        broadcast_frame(send_packet)
+        server.broadcast_frame(send_packet)
         print(message)
 
 server.options["custom_handler"] = custom_handler
