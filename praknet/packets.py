@@ -173,11 +173,11 @@ encapsulated = {
 # Just to speed up the development
 
 def read_address(data):
-    addr = ".".join([
-        str((~struct.unpack(">B", data[1:1 + 1])[0]) & 0xff),
-        str((~struct.unpack(">B", data[2:2 + 1])[0]) & 0xff),
-        str((~struct.unpack(">B", data[3:3 + 1])[0]) & 0xff),
-        str((~struct.unpack(">B", data[4:4 + 1])[0]) & 0xff)
+    address = ".".join([
+        str(~data[1] & 0xff),
+        str(~data[2] & 0xff),
+        str(~data[3] & 0xff),
+        str(~data[4] & 0xff)
     ])
     port = struct.unpack(">H", data[5:5 + 2])[0]
     return (addr, port)
@@ -188,7 +188,7 @@ def write_address(address):
     parts = addr.split(".")
     assert len(parts) == 4, f"Expected address length: 4, got {parts_count}"
     for part in parts:
-        data += struct.pack(">B", (~(int(part))) & 0xff)
+        data += bytes([~int(part) & 0xff])
     data += struct.pack(">H", port)
     return data
 
@@ -322,7 +322,7 @@ def write_connection_request(packet):
     data += bytes([packet["id"]])
     data += struct.pack(">Q", packet["client_guid"])
     data += struct.pack(">Q", packet["request_time"])
-    data += struct.pack(">B", packet["use_security"])
+    data += bytes([packet["use_security"]])
     return data
 
 def read_connection_request_accepted(data):
