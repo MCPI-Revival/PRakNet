@@ -98,33 +98,33 @@ def packet_handler(data, address):
             new_packet = copy(packets.ack)
             new_packet["packets"].append(frame_set["sequence_number"])
             socket.send(packets.write_acknowledgement(new_packet), address)
-            for frame in frame_set["packets"]:
-                identifier = frame["body"][0]
-                if options["debug"]:
-                    print("Received frame -> " + str(hex(identifier)))
-                if identifier < 0x80:
-                    if not connection["is_connected"]:
-                        if identifier == packets.connection_request["id"]:
-                            body = handler.handle_connection_request(frame["body"], address)
-                            packet = copy(packets.frame)
-                            packet["reliability"] = 0
-                            packet["body"] = body
-                            send_frame(packet, address)
-                        elif identifier == packets.new_connection["id"]:
-                            packet = packets.read_new_connection(frame["body"])
-                            if options["debug"]:
-                                print(packet)
-                            connection["is_connected"] = True
-                    elif identifier == packets.connection_closed["id"]:
-                        remove_connection(address)
-                    elif identifier == packets.connected_ping["id"]:
-                        body = handler.handle_connected_ping(frame["body"])
+            frame = frame_set["frame"]
+            identifier = frame["body"][0]
+            if options["debug"]:
+                print("Received frame -> " + str(hex(identifier)))
+            if identifier < 0x80:
+                if not connection["is_connected"]:
+                    if identifier == packets.connection_request["id"]:
+                        body = handler.handle_connection_request(frame["body"], address)
                         packet = copy(packets.frame)
                         packet["reliability"] = 0
                         packet["body"] = body
                         send_frame(packet, address)
-                if connection["is_connected"]:
-                    options["custom_handler"](frame, address)
+                    elif identifier == packets.new_connection["id"]:
+                        packet = packets.read_new_connection(frame["body"])
+                        if options["debug"]:
+                            print(packet)
+                        connection["is_connected"] = True
+                elif identifier == packets.connection_closed["id"]:
+                    remove_connection(address)
+                elif identifier == packets.connected_ping["id"]:
+                    body = handler.handle_connected_ping(frame["body"])
+                    packet = copy(packets.frame)
+                    packet["reliability"] = 0
+                    packet["body"] = body
+                    send_frame(packet, address)
+            if connection["is_connected"]:
+                options["custom_handler"](frame, address)
     elif identifier == packets.unconnected_ping["id"]:
         socket.send(handler.handle_unconnected_ping(data), address)
     elif identifier == packets.unconnected_ping_open_connections["id"]:
