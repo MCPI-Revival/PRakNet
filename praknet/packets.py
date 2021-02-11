@@ -488,7 +488,7 @@ def read_frame(data):
     if packet["is_fragmented"]:
         packet["fragment"]["size"] = struct.unpack('>l', data[offset:offset + 4])[0]
         offset += 4
-        packet["fragment"]["id"] = struct.unpack('>H', offset:offset + 2])[0]
+        packet["fragment"]["id"] = struct.unpack('>H', data[offset:offset + 2])[0]
         offset += 2
         packet["fragment"]["index"] = struct.unpack('>l', data[offset:offset + 4])[0]
         offset += 4
