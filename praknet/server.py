@@ -78,7 +78,7 @@ def send_frame(packet, address):
     connection = get_connection(address)
     new_packet = copy(packets.frame_set)
     new_packet["sequence_number"] = connection["sequence_number"]
-    new_packet["packets"].append(packet)
+    new_packet["frame"] = packet
     socket.send(packets.write_frame_set(new_packet), address)
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1
