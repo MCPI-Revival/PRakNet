@@ -41,13 +41,13 @@ def create(address):
     socket.setsockopt(s.SOL_SOCKET, s.SO_REUSEADDR, 1)
     socket.setsockopt(s.SOL_SOCKET, s.SO_BROADCAST, 1)
        
-def receive_buffer():
+def receive():
     try:
         return socket.recvfrom(65535)
     except s.error:
         return
           
-def send_buffer(buffer, address):
+def send(buffer, address):
     try:
         return socket.sendto(buffer, address)
     except s.error:
