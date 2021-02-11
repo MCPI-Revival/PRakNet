@@ -65,12 +65,6 @@ def get_last_packet(address):
     else:
         return b""
     
-def send_ack_queue(address):
-    connection = get_connection(address[0], address[1])
-    packets.ack["packets"] = []
-    packets.ack["packets"].append(connection["sequence_order"])
-    socket.send_buffer(packets.write_ack(), address)
-    
 def send_encapsulated(data, address, reliability, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
     connection = get_connection(address[0], address[1])
     packets.encapsulated["body"] = data
@@ -85,7 +79,6 @@ def send_encapsulated(data, address, reliability, reliable_frame_index = 0, sequ
     packets.encapsulated["fragment"]["index"] = compound_index
     packet = packets.write_encapsulated()
     socket.send_buffer(packet, address)
-    send_ack_queue(address)
     add_to_queue(packet, address)
 
 def broadcast_encapsulated(data, reliability, reliable_frame_index = 0, sequenced_frame_index = 0, ordered_frame_index = 0, order_channel = 0, compound_size = 0, compound_id = 0, compound_index = 0):
@@ -101,11 +94,12 @@ def packet_handler(data, address):
             packets.encapsulated["flags"] = 0
             packets.encapsulated["sequence_order"] = connection["sequence_order"]
             socket.send_buffer(packets.write_encapsulated(), address)
-        elif id == messages.ID_ACK:
-            pass
-        else:
-            send_ack_queue(address)
+        elif 0x80 <= id <= 0x8f:
             packets.read_encapsulated(data)
+            connection = get_connection(address[0], address[1])
+            packets.ack["packets"] = []
+            packets.ack["packets"].append(packets.encapsulated["sequence_order"])
+            socket.send_buffer(packets.write_ack(), address)
             data_packet = packets.encapsulated["body"]
             id = data_packet[0]
             print("DATA_PACKET -> " + str(hex(id)))
