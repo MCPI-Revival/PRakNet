@@ -29,42 +29,41 @@
 #                                                                              #
 ################################################################################
 
-from praknet import messages
 import struct
 
 # Packet templates
 
 connected_ping = {
-    "id": messages.ID_CONNECTED_PING,
+    "id": 0x00,
     "time": None
 }
 
 unconnected_ping = {
-    "id": messages.ID_UNCONNECTED_PING,
+    "id": 0x01,
     "time": None,
     "magic": None
 }
 
 unconnected_ping_open_connections = {
-    "id": messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS,
+    "id": 0x02,
     "time": None,
     "magic": None
 }
 
 connected_pong = {
-    "id": messages.ID_CONNECTED_PONG,
+    "id": 0x03,
     "time": None
 }
 
 open_connection_request_1 = {
-    "id": messages.ID_OPEN_CONNECTION_REQUEST_1,
+    "id": 0x05,
     "magic": None,
     "protocol_version": None,
     "mtu_size": None
 }
 
 open_connection_reply_1 = {
-    "id": messages.ID_OPEN_CONNECTION_REPLY_1,
+    "id": 0x06,
     "magic": None,
     "server_guid": None,
     "use_security": None,
@@ -72,7 +71,7 @@ open_connection_reply_1 = {
 }
 
 open_connection_request_2 = {
-    "id": messages.ID_OPEN_CONNECTION_REQUEST_2,
+    "id": 0x07,
     "magic": None,
     "server_address": None,
     "mtu_size": None,
@@ -80,7 +79,7 @@ open_connection_request_2 = {
 }
 
 open_connection_reply_2 = {
-    "id": messages.ID_OPEN_CONNECTION_REPLY_2,
+    "id": 0x08,
     "magic": None,
     "server_guid": None,
     "client_address": None,
@@ -89,14 +88,14 @@ open_connection_reply_2 = {
 }
 
 connection_request = {
-    "id": messages.ID_CONNECTION_REQUEST,
+    "id": 0x09,
     "client_guid": None,
     "request_time": None,
     "use_security": None
 }
 
 connection_request_accepted = {
-    "id": messages.ID_CONNECTION_REQUEST_ACCEPTED,
+    "id": 0x10,
     "client_address": None,
     "system_index": None,
     "system_addresses": [],
@@ -105,7 +104,7 @@ connection_request_accepted = {
 }
 
 new_connection = {
-    "id": messages.ID_NEW_CONNECTION,
+    "id": 0x13,
     "address": None,
     "system_addresses": [],
     "ping_time": None,
@@ -113,18 +112,18 @@ new_connection = {
 }
 
 connection_closed = {
-    "id": messages.ID_CONNECTION_CLOSED
+    "id": 0x15
 }
 
 invalid_protocol_version = {
-    "id": messages.ID_INCOMPATIBLE_PROTOCOL_VERSION,
+    "id": 0x1a,
     "protocol_version": None,
     "magic": None,
     "server_guid": None
 }
 
 unconnected_pong = {
-    "id": messages.ID_UNCONNECTED_PONG,
+    "id": 0x1c,
     "time": None,
     "server_guid": None,
     "magic": None,
@@ -132,7 +131,7 @@ unconnected_pong = {
 }
 
 advertise_system = {
-    "id": messages.ID_ADVERTISE_SYSTEM,
+    "id": 0x1d,
     "time": None,
     "server_guid": None,
     "magic": None,
@@ -140,12 +139,12 @@ advertise_system = {
 }
 
 nack = {
-    "id": messages.ID_NACK,
+    "id": 0xa0,
     "packets": [],
 }
 
 ack = {
-    "id": messages.ID_ACK,
+    "id": 0xc0,
     "packets": []
 }
 
@@ -195,7 +194,7 @@ def write_address(address):
     data += struct.pack(">H", port)
     return data
 
-# Decode and Encode PAckets
+# Decode and Encode Packets
 
 def read_connected_ping(data):
     return {
