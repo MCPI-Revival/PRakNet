@@ -537,6 +537,6 @@ def read_frame_set(data):
 def write_frame_set(packet):
     data = bytes([packet["id"]])
     data += struct.pack("<L", packet["sequence_number"])[0:-1]
-    for packet in packet["packets"]:
-        data += write_frame(packet)
+    for frame in packet["packets"]:
+        data += write_frame(frame)
     return data
