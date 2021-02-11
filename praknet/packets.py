@@ -525,10 +525,13 @@ def read_frame_set(data):
         "packets": []
     }
     offset = 4
-    while len(data) <= offset or offset < 0:
-        frame = read_frame(data[offset:])
-        packet["packets"].append(frame)
-        offset += frame["length"]
+    while True:
+        try:
+            frame = read_frame(data[offset:])
+            packet["packets"].append(frame)
+            offset += frame["length"]
+        except:
+            break
     return packet
 
 def write_frame_set(packet):
