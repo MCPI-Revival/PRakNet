@@ -101,14 +101,10 @@ def packet_handler(data, address):
     connection = get_connection(address)
     if connection != None:
         if identifier == packets.nack["id"]:
-            packets.read_encapsulated(get_last_packet(address))
-            packets.encapsulated["flags"] = 0
-            packets.encapsulated["sequence_order"] = connection["sequence_order"]
-            socket.send_buffer(packets.write_encapsulated(), address)
+            send_frame(get_last_packet(address))
         elif identifier == packets.ack["id"]:
             pass
         else:
-            send_ack_queue(address)
             frame_set = packets.read_frame_set(data)
             for frame in frame_set["packets"]:
                 identifier = frame["body"][0]
