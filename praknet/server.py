@@ -104,11 +104,12 @@ def packet_handler(data, address):
             send_frame(get_last_packet(address))
         elif identifier == packets.ack["id"]:
             pass
-        else:
+        elif 0x80 <= identifier <= 0x8f:
             frame_set = packets.read_frame_set(data)
             for frame in frame_set["packets"]:
                 identifier = frame["body"][0]
-                print("DATA_PACKET -> " + str(hex(id)))
+                if options["debug"]:
+                    print("Received frame -> " + str(hex(identifier)))
                 if identifier < 0x80:
                     if not connection["is_connected"]:
                         if identifier == packets.connection_request["id"]:
@@ -119,11 +120,12 @@ def packet_handler(data, address):
                             send_frame(packet, address)
                         elif identifier == packets.new_connection["id"]:
                             packet = packets.read_new_connection(frame["body"])
-                            print(packet)
+                            if options["debug"]:
+                                print(packet)
                             connection["is_connected"] = True
-                    elif identifier == messages.ID_CONNECTION_CLOSED:
+                    elif identifier == packets.connection_closed["id"]:
                         remove_connection(address[0], address[1])
-                    elif identifier == messages.ID_CONNECTED_PING:
+                    elif identifier == packets.connected_ping["id"]:
                         body = handler.handle_connected_ping(frame["body"])
                         packet = copy(packets.frame)
                         packet["reliability"] = 0
@@ -131,14 +133,14 @@ def packet_handler(data, address):
                         send_frame(packet, address)
                 if connection["connecton_state"] == status["connected"]:
                     options["custom_handler"](frame, address)
-    elif id == messages.ID_UNCONNECTED_PING:
-        socket.send_buffer(handler.handle_unconnected_ping(data), address)
-    elif id == messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
-        socket.send_buffer(handler.handle_unconnected_ping_open_connections(data), address)
-    elif id == messages.ID_OPEN_CONNECTION_REQUEST_1:
-        socket.send_buffer(handler.handle_open_connection_request_1(data), address)
-    elif id == messages.ID_OPEN_CONNECTION_REQUEST_2:
-        socket.send_buffer(handler.handle_open_connection_request_2(data, (address[0], address[1], 4)), address)
+    elif identifier == packets.unconnected_ping["id"]:
+        socket.send(handler.handle_unconnected_ping(data), address)
+    elif identifier == packets.unconnected_ping_open_connections["id"]:
+        socket.send(handler.handle_unconnected_ping_open_connections(data), address)
+    elif identifier == packets.open_connection_request_1["id"]:
+        socket.send(handler.handle_open_connection_request_1(data), address)
+    elif identifier == packets.open_connection_request_2["id"]:
+        socket.send(handler.handle_open_connection_request_2(data, address), address)
 
 def run():
     socket.create((options["ip"], options["port"]))
