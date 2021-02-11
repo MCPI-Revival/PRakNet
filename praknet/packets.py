@@ -475,8 +475,8 @@ def read_frame(data):
     }
     offset = 3
     if 2 <= packet["reliability"] <= 7 and packet["reliability"] != 5:
-        packet["reliable_index"] = struct.unpack('<L', data[packet["length"]:packet["length"] + 3] + b'\x00')[0]
-        packet["length"] += 3
+        packet["reliable_index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+        offset += 3
     if packet["reliability"] == 1 or packet["reliability"] == 4:
         packet["sequence_index"] = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
         offset += 3
@@ -521,7 +521,7 @@ def read_frame_set(data):
     return {
         "id": data[0],
         "sequence_number": struct.unpack('<L', data[1:1 + 3] + b'\x00')[0],
-        "frame": read_frame(data[offset:])
+        "frame": read_frame(data[4:])
     }
 
 def write_frame_set(packet):
