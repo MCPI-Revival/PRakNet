@@ -78,7 +78,7 @@ def send_ack_queue(address):
     connection = get_connection(address)
     new_packet = copy(packets.ack)
     new_packet["packets"].append(connection["sequence_number"])
-    socket.send_buffer(packets.write_acknowledgement(new_packet), address)
+    socket.send(packets.write_acknowledgement(new_packet), address)
     
 def send_frame(packet, address):
     connection = get_connection(address)
@@ -129,7 +129,7 @@ def packet_handler(data, address):
                         packet["reliability"] = 0
                         packet["body"] = body
                         send_frame(packet, address)
-                if connection["connecton_state"] == status["connected"]:
+                if connection["is_connected"]:
                     options["custom_handler"](frame, address)
     elif identifier == packets.unconnected_ping["id"]:
         socket.send(handler.handle_unconnected_ping(data), address)
