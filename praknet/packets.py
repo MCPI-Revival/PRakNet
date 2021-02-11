@@ -184,7 +184,7 @@ def read_address(data):
 
 def write_address(address):
     addr, port = address
-    data = struct.pack(">B", 4)
+    data = bytes([4])
     parts = addr.split(".")
     assert len(parts) == 4, f"Expected address length: 4, got {parts_count}"
     for part in parts:
@@ -201,7 +201,7 @@ def read_connected_ping(data):
     }
 
 def write_connected_ping(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += struct.pack(">Q", packet["time"])
     return data
 
@@ -213,7 +213,7 @@ def read_unconnected_ping(data):
     }
 
 def write_unconnected_ping(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += struct.pack(">Q", packet["time"])
     data += packet["magic"]
     return data
@@ -226,7 +226,7 @@ def read_unconnected_ping_open_connections(data):
     }
 
 def write_unconnected_ping_open_connections(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += struct.pack(">Q", packet["time"])
     data += packet["magic"]
     return data
@@ -238,7 +238,7 @@ def read_connected_pong(data):
     }
 
 def write_connected_pong(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += struct.pack(">Q", packet["time"])
     return data
 
@@ -246,14 +246,14 @@ def read_open_connection_request_1(data):
     return {
         "id": data[0],
         "magic": data[1:1 + 16],
-        "protocol_version": struct.unpack(">B", data[17:17 + 1])[0],
+        "protocol_version": data[17],
         "mtu_size": len(data[18:]) + 46
     }
 
 def write_open_connection_request_1(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += packet["magic"]
-    data += struct.pack(">B", packet["protocol_version"])
+    data += bytes([packet["protocol_version"]])
     data += b"\x00" * (packet["mtu_size"] - 46)
     return data
 
@@ -262,15 +262,15 @@ def read_open_connection_reply_1(data):
         "id": data[0],
         "magic": data[1:1 + 16],
         "server_guid": struct.unpack(">Q", data[17:17 + 8])[0],
-        "use_security": struct.unpack(">B", data[25:25 + 1])[0],
+        "use_security": data[25],
         "mtu_size": struct.unpack(">H", data[26:26 + 2])[0]
     }
 
 def write_open_connection_reply_1(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += packet["magic"]
     data += struct.pack(">Q", packet["server_guid"])
-    data += struct.pack(">B", packet["use_security"])
+    data += bytes([packet["use_security"]])
     data += struct.pack(">H", packet["mtu_size"])
     return data
 
@@ -284,7 +284,7 @@ def read_open_connection_request_2(data):
     }
 
 def write_open_connection_request_2(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += packet["magic"]
     data += write_address(packet["server_address"])
     data += struct.pack(">H", packet["mtu_size"])
@@ -292,22 +292,22 @@ def write_open_connection_request_2(packet):
     return data
 
 def read_open_connection_reply_2(data):
-    packet = {
+    return {
         "id": data[0],
         "magic": data[1:1 + 16],
         "server_guid": struct.unpack(">Q", data[17:17 + 8])[0],
         "client_address": read_address(data[25:25 + 7]),
         "mtu_size": struct.unpack(">H", data[32:32 + 2])[0],
-        "use_security": struct.unpack(">B", data[34:34 + 1])[0]
+        "use_security": data[34]
     }
 
 def write_open_connection_reply_2(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += packet["magic"]
     data += struct.pack(">Q", packet["server_guid"])
     data += write_address(packet["client_address"])
     data += struct.pack(">H", packet["mtu_size"])
-    data += struct.pack(">B", packet["use_security"])
+    data += bytes([packet["use_security"]])
     return data
 
 def read_connection_request(data):
@@ -315,11 +315,11 @@ def read_connection_request(data):
         "id": data[0],
         "client_guid": struct.unpack(">Q", data[1:1 + 8])[0],
         "request_time": struct.unpack(">Q", data[9:9 + 8])[0],
-        "use_security": struct.unpack(">B", data[17:17 + 1])[0]
+        "use_security": data[17]
     }
 
 def write_connection_request(packet):
-    data += struct.pack(">B", packet["id"])
+    data += bytes([packet["id"]])
     data += struct.pack(">Q", packet["client_guid"])
     data += struct.pack(">Q", packet["request_time"])
     data += struct.pack(">B", packet["use_security"])
@@ -329,7 +329,7 @@ def read_connection_request_accepted(data):
     packet = {
         "id": data[0],
         "client_address": read_address(data[1:1 + 7]),
-        "system_index": struct.unpack(">B", data[8:8 + 1])[0],
+        "system_index": data[8],
         "system_addresses": [],
         "request_time": struct.unpack(">Q", data[79:79 + 8])[0],
         "time": struct.unpack(">Q", data[87:87 + 8])[0]
@@ -341,9 +341,9 @@ def read_connection_request_accepted(data):
     return packet
 
 def write_connection_request_accepted(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += write_address(packet["client_address"])
-    data += struct.pack(">B", packet["system_index"])
+    data += bytes([packet["system_index"]])
     for i in range(0, 10):
         data += write_address(packet["system_addresses"][i])
     data += struct.pack(">Q", packet["request_time"])
@@ -365,7 +365,7 @@ def read_new_connection(data):
     return packet
 
 def write_new_connection(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += write_address(packet["address"])
     for i in range(0, 10):
         data += write_address(packet["system_addresses"][i])
@@ -382,8 +382,8 @@ def read_invalid_protocol_version(data):
     }
 
 def write_invalid_protocol_version(packet):
-    data = struct.pack(">B", packet["id"])
-    data += struct.pack(">B", packet["protocol_version"])
+    data = bytes([packet["id"]])
+    data += bytes([packet["protocol_version"]])
     data += packet["magic"]
     data += struct.pack(">Q", packet["server_guid"])
     return data
@@ -398,7 +398,7 @@ def read_unconnected_pong(data):
     }
 
 def write_unconnected_pong(packet):
-    data = struct.pack(">B", packet["id"])
+    data = bytes([packet["id"]])
     data += struct.pack(">Q", packet["time"])
     data += struct.pack(">Q", packet["server_guid"])
     data += packet["magic"]
