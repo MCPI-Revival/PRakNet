@@ -138,33 +138,24 @@ encapsulated = {
 }
 
 def read_address(data):
-    version = data[0]
-    if version == 4:
-        addr = ".".join([
-            str((~struct.unpack(">B", data[1:1 + 1])[0]) & 0xff),
-            str((~struct.unpack(">B", data[2:2 + 1])[0]) & 0xff),
-            str((~struct.unpack(">B", data[3:3 + 1])[0]) & 0xff),
-            str((~struct.unpack(">B", data[4:4 + 1])[0]) & 0xff)
-        ])
-        port = struct.unpack(">H", data[5:5 + 2])[0]
-        return (addr, port, version)
-    else:
-        raise Exception(f"Unknown address version {version}")
+    addr = ".".join([
+        str((~struct.unpack(">B", data[1:1 + 1])[0]) & 0xff),
+        str((~struct.unpack(">B", data[2:2 + 1])[0]) & 0xff),
+        str((~struct.unpack(">B", data[3:3 + 1])[0]) & 0xff),
+        str((~struct.unpack(">B", data[4:4 + 1])[0]) & 0xff)
+    ])
+    port = struct.unpack(">H", data[5:5 + 2])[0]
+    return (addr, port)
 
 def write_address(address):
-    addr, port, version = address
-    buffer = b""
-    buffer += struct.pack(">B", version)
-    if version == 4:
-        parts = addr.split(".")
-        parts_count = len(parts)
-        assert parts_count == 4, f"Expected address length: 4, got {parts_count}"
-        for part in parts:
-            buffer += struct.pack(">B", (~(int(part))) & 0xff)
-        buffer += struct.pack(">H", port)
-        return buffer
-    else:
-        raise Exception(f"Unknown address version {version}")
+    addr, port = address
+    data = struct.pack(">B", 4)
+    parts = addr.split(".")
+    assert len(parts) == 4, f"Expected address length: 4, got {parts_count}"
+    for part in parts:
+        data += struct.pack(">B", (~(int(part))) & 0xff)
+    data += struct.pack(">H", port)
+    return data
 
 def read_connected_ping(data):
     return {
@@ -229,40 +220,41 @@ def write_open_connection_request_1(packet):
     data += b"\x00" * (packet["mtu_size"] - 46)
     return data
 
-# I'll pause my development here for now #
-
 def read_open_connection_reply_1(data):
-    open_connection_reply_1["id"] = data[0]
-    open_connection_reply_1["magic"] = data[1:1 + 16]
-    open_connection_reply_1["server_guid"] = struct.unpack(">Q", data[17:17 + 8])[0]
-    open_connection_reply_1["use_security"] = struct.unpack(">B", data[25:25 + 1])[0]
-    open_connection_reply_1["mtu_size"] = struct.unpack(">H", data[26:26 + 2])[0]
+    return {
+        "id": data[0],
+        "magic": data[1:1 + 16],
+        "server_guid": struct.unpack(">Q", data[17:17 + 8])[0],
+        "use_security": struct.unpack(">B", data[25:25 + 1])[0],
+        "mtu_size": struct.unpack(">H", data[26:26 + 2])[0]
+    }
 
-def write_open_connection_reply_1():
-    buffer = b""
-    buffer += struct.pack(">B", open_connection_reply_1["id"])
-    buffer += open_connection_reply_1["magic"]
-    buffer += struct.pack(">Q", open_connection_reply_1["server_guid"])
-    buffer += struct.pack(">B", open_connection_reply_1["use_security"])
-    buffer += struct.pack(">H", open_connection_reply_1["mtu_size"])
-    return buffer
+def write_open_connection_reply_1(packet):
+    data = struct.pack(">B", packet["id"])
+    data += packet["magic"]
+    data += struct.pack(">Q", packet["server_guid"])
+    data += struct.pack(">B", packet["use_security"])
+    data += struct.pack(">H", packet["mtu_size"])
+    return data
 
 def read_open_connection_request_2(data):
-    open_connection_request_2["id"] = data[0]
-    open_connection_request_2["magic"] = data[1:1 + 16]
-    open_connection_request_2["server_address"] = read_address(data[17:17 + 7])
-    open_connection_request_2["mtu_size"] = struct.unpack(">H", data[24:24 + 2])[0]
-    open_connection_request_2["client_guid"] = struct.unpack(">Q", data[26:26 + 8])[0]
+    return {
+        "id": data[0],
+        "magic": data[1:1 + 16],
+        "server_address": read_address(data[17:17 + 7]),
+        "mtu_size": struct.unpack(">H", data[24:24 + 2])[0],
+        "client_guid": struct.unpack(">Q", data[26:26 + 8])[0]
+    }
 
-def write_open_connection_request_2():
-    server_address = open_connection_request_2["server_address"]
-    buffer = b""
-    buffer += struct.pack(">B", open_connection_request_2["id"])
-    buffer += open_connection_request_2["magic"]
-    buffer += write_address(server_address[0], server_address[1], server_address[2])
-    buffer += struct.pack(">H", open_connection_request_2["mtu_size"])
-    buffer += struct.pack(">Q", open_connection_request_2["client_guid"])
-    return buffer
+def write_open_connection_request_2(packet):
+    data = struct.pack(">B", packet["id"])
+    data += packet["magic"]
+    data += write_address(packet["server_address"])
+    data += struct.pack(">H", packet["mtu_size"])
+    data += struct.pack(">Q", packet["client_guid"])
+    return data
+
+# Just a small check point #
 
 def read_open_connection_reply_2(data):
     open_connection_reply_2["id"] = data[0]
