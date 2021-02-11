@@ -68,9 +68,6 @@ def get_connection(address):
     if token in connections:
         return connections[token]
 
-def set_option(option, value):
-    options[option] = value
-
 def get_last_packet(address):
     connection = get_connection(address)
     queue = connection["received_packets"]
