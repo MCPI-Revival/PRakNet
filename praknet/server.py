@@ -85,10 +85,11 @@ def send_frame(packet, address):
     new_packet = copy(packets.frame_set)
     new_packet["sequence_number"] = connection["sequence_number"]
     new_packet["packets"].append(packet)
-    socket.send(packets.write_frame_set(new_packet), address)
     send_ack_queue(address)
+    socket.send(packets.write_frame_set(new_packet), address)
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1
+    send_ack_queue(address)
 
 def broadcast_frame(packet):
     for connection in connections.values():
@@ -106,7 +107,6 @@ def packet_handler(data, address):
         elif identifier == packets.ack["id"]:
             pass
         elif 0x80 <= identifier <= 0x8f:
-            send_ack_queue(address)
             frame_set = packets.read_frame_set(data)
             for frame in frame_set["packets"]:
                 identifier = frame["body"][0]
