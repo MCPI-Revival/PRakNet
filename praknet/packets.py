@@ -373,38 +373,40 @@ def write_new_connection(packet):
     data += struct.pack(">Q", packet["pong_time"])
     return data
 
-# Just a small check point #
-
 def read_invalid_protocol_version(data):
-    invalid_protocol_version["id"] = data[0]
-    invalid_protocol_version["protocol_version"] = data[1]
-    invalid_protocol_version["magic"] = data[2:2 + 16]
-    invalid_protocol_version["server_guid"] = struct.unpack(">Q", data[18:18 + 8])[0]
+    return {
+        "id": data[0],
+        "protocol_version": data[1],
+        "magic": data[2:2 + 16],
+        "server_guid": struct.unpack(">Q", data[18:18 + 8])[0]
+    }
 
-def write_invalid_protocol_version():
-    buffer = b""
-    buffer += struct.pack(">B", invalid_protocol_version["id"])
-    buffer += struct.pack(">B", invalid_protocol_version["protocol_version"])
-    buffer += invalid_protocol_version["magic"]
-    buffer += struct.pack(">Q", invalid_protocol_version["server_guid"])
-    return buffer
+def write_invalid_protocol_version(packet):
+    data = struct.pack(">B", packet["id"])
+    data += struct.pack(">B", packet["protocol_version"])
+    data += packet["magic"]
+    data += struct.pack(">Q", packet["server_guid"])
+    return data
 
 def read_unconnected_pong(data):
-    unconnected_pong["id"] = data[0]
-    unconnected_pong["time"] = struct.unpack(">Q", data[1:1 + 8])[0]
-    unconnected_pong["server_guid"] = struct.unpack(">Q", data[9:9 + 8])
-    unconnected_pong["magic"] = data[17:17 + 16]
-    unconnected_pong["data"] = data[35:35 + struct.unpack(">H", data[33:33 + 2])[0]].decode()
+    return {
+        "id": data[0],
+        "time": struct.unpack(">Q", data[1:1 + 8])[0],
+        "server_guid": struct.unpack(">Q", data[9:9 + 8]),
+        "magic": data[17:17 + 16],
+        "data": data[35:35 + struct.unpack(">H", data[33:33 + 2])[0]].decode()
+    }
 
-def write_unconnected_pong():
-    buffer = b""
-    buffer += struct.pack(">B", unconnected_pong["id"])
-    buffer += struct.pack(">Q", unconnected_pong["time"])
-    buffer += struct.pack(">Q", unconnected_pong["server_guid"])
-    buffer += unconnected_pong["magic"]
-    buffer += struct.pack(">H", len(unconnected_pong["data"]))
-    buffer += unconnected_pong["data"].encode()
-    return buffer
+def write_unconnected_pong(packet):
+    data = struct.pack(">B", packet["id"])
+    data += struct.pack(">Q", packet["time"])
+    data += struct.pack(">Q", packet["server_guid"])
+    data += packet["magic"]
+    data += struct.pack(">H", len(packet["data"]))
+    data += packet["data"].encode()
+    return data
+
+# Just a small check point #
 
 def read_nack(data):
     nack["id"] = data[0]
