@@ -97,41 +97,44 @@ def broadcast_frame(packet, address):
         send_frame(packet, connection["address"])
     
 def packet_handler(data, address):
-    id = data[0]
-    connection = get_connection(address[0], address[1])
+    identifier = data[0]
+    connection = get_connection(address)
     if connection != None:
-        if id == messages.ID_NACK:
+        if identifier == packets.nack["id"]:
             packets.read_encapsulated(get_last_packet(address))
             packets.encapsulated["flags"] = 0
             packets.encapsulated["sequence_order"] = connection["sequence_order"]
             socket.send_buffer(packets.write_encapsulated(), address)
-        elif id == messages.ID_ACK:
+        elif identifier == packets.ack["id"]:
             pass
         else:
             send_ack_queue(address)
-            packets.read_encapsulated(data)
-            data_packet = packets.encapsulated["body"]
-            id = data_packet[0]
-            print("DATA_PACKET -> " + str(hex(id)))
-            if id < 0x80:
-                if connection["connecton_state"] == status["connecting"]:
-                    if id == messages.ID_CONNECTION_REQUEST:
-                        buffer = handler.handle_connection_request(data_packet, connection)
-                        send_encapsulated(buffer, address, 0)
-                    elif id == messages.ID_NEW_CONNECTION:
-                        packets.read_encapsulated(data)
-                        packets.read_new_connection(packets.encapsulated["body"])
-                        print(packets.new_connection)
-                        connection["connecton_state"] = status["connected"]
-                elif id == messages.ID_CONNECTION_CLOSED:
-                    connection["connecton_state"] = status["disconnecting"]
-                    remove_connection(address[0], address[1])
-                    connection["connecton_state"] = status["disconnected"]
-                elif id == messages.ID_CONNECTED_PING:
-                    buffer = handler.handle_connected_ping(data_packet)
-                    send_encapsulated(buffer, address, 0)
-            if connection["connecton_state"] == status["connected"]:
-                options["custom_handler"](data, address)
+            frame_set = packets.read_frame_set(data)
+            for frame in frame_set["packets"]:
+                identifier = frame["body"][0]
+                print("DATA_PACKET -> " + str(hex(id)))
+                if identifier < 0x80:
+                    if not connection["is_connected"]:
+                        if identifier == packets.connection_request["id"]:
+                            body = handler.handle_connection_request(frame["body"], address)
+                            packet = copy(packets.frame)
+                            packet["reliability"] = 0
+                            packet["body"] = body
+                            send_frame(packet, address)
+                        elif identifier == packets.new_connection["id"]:
+                            packet = packets.read_new_connection(frame["body"])
+                            print(packet)
+                            connection["is_connected"] = True
+                    elif identifier == messages.ID_CONNECTION_CLOSED:
+                        remove_connection(address[0], address[1])
+                    elif identifier == messages.ID_CONNECTED_PING:
+                        body = handler.handle_connected_ping(frame["body"])
+                        packet = copy(packets.frame)
+                        packet["reliability"] = 0
+                        packet["body"] = body
+                        send_frame(packet, address)
+                if connection["connecton_state"] == status["connected"]:
+                    options["custom_handler"](frame, address)
     elif id == messages.ID_UNCONNECTED_PING:
         socket.send_buffer(handler.handle_unconnected_ping(data), address)
     elif id == messages.ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
