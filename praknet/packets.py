@@ -186,7 +186,7 @@ def read_address(data):
 def write_address(address):
     data = bytes([4])
     parts = address[0].split(".")
-    assert len(parts) == 4, "Expected address length: 4, got " str(parts_count)
+    assert len(parts) == 4, "Expected address length: 4, got " + str(parts_count)
     for part in parts:
         data += bytes([~int(part) & 0xff])
     data += struct.pack(">H", address[1])
