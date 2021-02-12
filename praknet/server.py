@@ -43,7 +43,7 @@ options = {
     "server_guid": struct.unpack(">Q", os.urandom(8))[0],
     "custom_handler": lambda data, addr: 0,
     "accepted_raknet_protocols": [5],
-    "debug": True
+    "debug": False
 }
 
 connections = {}
