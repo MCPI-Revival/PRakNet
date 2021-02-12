@@ -68,14 +68,23 @@ def custom_handler(packet, address):
         connection["yaw"] = struct.unpack(">f", packet["body"][17:17 + 4])[0]
         connection["pitch"] = struct.unpack(">f", packet["body"][21:21 + 4])[0]
         if server.options["debug"]:
-            message = f"X: {connection['pos'][0]} Y: {connection['pos'][1]} Z: {connection['pos'][2]} YAW: {connection['yaw']} PITCH: {connection['pitch']}"
+            message = "X: "
+            message += str(connection["pos"][0])
+            message += " Y: "
+            message += str(connection["pos"][1])
+            message += " Z: "
+            message += str(connection["pos"][2])
+            message += " YAW: "
+            message += str(connection["yaw"])
+            message += " PITCH: "
+            message += str(connection["pitch"])
             new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
             send_packet = copy(packets.frame)
             send_packet["reliability"] = 0
             send_packet["body"] = new_packet
             server.send_frame(send_packet, address)
     elif identifier == 0x84:
-        message = f"{connection['username']} joined the game."
+        message = connection["username"] + " joined the game."
         new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
         send_packet = copy(packets.frame)
         send_packet["reliability"] = 0
