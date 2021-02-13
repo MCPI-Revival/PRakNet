@@ -32,20 +32,25 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="PRakNet",
-    version="1.0",
-    description="A RakNet implementation for python.",
-    long_description="A Minecraft PI Edition oriented RakNet implementation written in python.",
-    url="https://github.com/MCPI-Revival/PRakNet",
-    author="MFDGaming",
-    author_email="alexandros.argentakis@gmail.com",
-    license="MIT License",
-    classifiers= [
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'Programming Language :: Python :: 3 :: Only',
-        'Topic :: Software Development :: Libraries'
+    name = "PRakNet",
+    packages = ["PRakNet"],
+    version = "1.0",
+    license = "MIT",
+    description = "A Minecraft PI Edition oriented RakNet implementation written in python.",
+    author = "MFDGaming",
+    author_email = "alexandros.argentakis@gmail.com",
+    url = "https://github.com/MCPI-Revival/PRakNet",
+    keywords = ["mcpi", "raknet", "python3"],
+    classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Libraries",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9"
     ],
-    keywords='RakNet implementation for python.',
-    packages=find_packages(where='.')
+    packages = find_packages(where = '.')
 )
