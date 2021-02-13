@@ -61,6 +61,11 @@ def add_connection(address):
 def remove_connection(address):
     token = str(address[0]) + ":" + str(address[1])
     if token in connections:
+        body = bytes([connection_closed["id"]])
+        packet = copy(packets.frame)
+        packet["reliability"] = 0
+        packet["body"] = body
+        send_frame(packet, address)
         del connections[token]
 
 def get_connection(address):
