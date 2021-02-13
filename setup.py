@@ -36,7 +36,7 @@ from setuptools import setup
 setup(
     name = "PRakNet",
     packages = ["praknet"],
-    version = "1.0",
+    version = "1.1",
     license = "MIT",
     description = "A Minecraft PI Edition oriented RakNet implementation written in python.",
     author = "MFDGaming",
