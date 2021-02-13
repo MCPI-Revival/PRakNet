@@ -103,7 +103,7 @@ def packet_handler(data, address):
             frame_set = packets.read_frame_set(data)
             new_packet = copy(packets.ack)
             new_packet["packets"].append(frame_set["sequence_number"])
-            socket.send(packets.write_acknowledgement(new_packet), address)
+            server_socket.sendto(packets.write_acknowledgement(new_packet), address)
             frame = frame_set["frame"]
             identifier = frame["body"][0]
             if options["debug"]:
