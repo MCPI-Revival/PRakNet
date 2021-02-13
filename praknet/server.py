@@ -33,7 +33,7 @@ from copy import copy
 import os
 from praknet import handler
 from praknet import packets
-from praknet import socket
+import socket
 import struct
 
 options = {
@@ -46,6 +46,7 @@ options = {
     "debug": False
 }
 
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 connections = {}
 
 def add_connection(address):
@@ -84,7 +85,7 @@ def send_frame(packet, address):
     new_packet = copy(packets.frame_set)
     new_packet["sequence_number"] = connection["sequence_number"]
     new_packet["frame"] = packet
-    socket.send(packets.write_frame_set(new_packet), address)
+    server_socket.sendto(packets.write_frame_set(new_packet), address)
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1
 
@@ -131,18 +132,23 @@ def packet_handler(data, address):
             if connection["is_connected"]:
                 options["custom_handler"](frame, address)
     elif identifier == packets.unconnected_ping["id"]:
-        socket.send(handler.handle_unconnected_ping(data), address)
+        server_socket.sendto(handler.handle_unconnected_ping(data), address)
     elif identifier == packets.unconnected_ping_open_connections["id"]:
-        socket.send(handler.handle_unconnected_ping(data), address)
+        server_socket.sendto(handler.handle_unconnected_ping(data), address)
     elif identifier == packets.open_connection_request_1["id"]:
-        socket.send(handler.handle_open_connection_request_1(data), address)
+        server_socket.sendto(handler.handle_open_connection_request_1(data), address)
     elif identifier == packets.open_connection_request_2["id"]:
-        socket.send(handler.handle_open_connection_request_2(data, address), address)
+        server_socket.sendto(handler.handle_open_connection_request_2(data, address), address)
 
 def run():
-    socket.create((options["ip"], options["port"]))
+    try:
+        server_socket.bind((options["ip"], options["port"]))
+    except socket.error as e:
+        raise Exception("Failed to bind!\n" + str(e))
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     while True:
-        recv = socket.receive()
+        recv = server_socket.recvfrom(65535)
         if recv != None:
             data, address = recv
             packet_handler(data, address)
