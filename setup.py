@@ -29,11 +29,13 @@
 #                                                                              #
 ################################################################################
 
+
+from setuptools import find_packages
 from setuptools import setup
 
 setup(
     name = "PRakNet",
-    packages = ["PRakNet"],
+    packages = find_packages(where = '.'),
     version = "1.0",
     license = "MIT",
     description = "A Minecraft PI Edition oriented RakNet implementation written in python.",
