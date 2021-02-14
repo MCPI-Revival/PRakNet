@@ -1,6 +1,20 @@
 # PRakNet
 A low level raknet implementation
 
+Installation:
+
+Linux / MacOS ->
+
+```
+pip3 install praknet
+```
+
+Windows ->
+
+```
+pip install praknet
+```
+
 Usage:
 
 ```
