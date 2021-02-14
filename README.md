@@ -5,15 +5,11 @@ Installation:
 
 Linux / MacOS ->
 
-```
-pip3 install praknet
-```
+```pip3 install praknet```
 
 Windows ->
 
-```
-pip install praknet
-```
+```pip install praknet```
 
 Usage:
 
