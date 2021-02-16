@@ -31,7 +31,6 @@
 
 from copy import copy
 import os
-from praknet import handler
 from praknet import packets
 import socket
 import struct
