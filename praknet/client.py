@@ -43,6 +43,7 @@ options = {
     "guid": struct.unpack(">Q", os.urandom(8))[0],
     "protocol_version": 5,
     "debug": False,
+    "custom_handler": lambda frame: 0,
     "magic": b"\x00\xff\xff\x00\xfe\xfe\xfe\xfe\xfd\xfd\xfd\xfd\x12\x34\x56\x78",
     "mtu_size": 512
 }
@@ -113,7 +114,7 @@ def connect():
                 new_packet = copy(packets.ack)
                 new_packet["packets"].append(frame_set["sequence_number"])
                 client_socket.sendto(packets.write_acknowledgement(new_packet), (options["ip"], options["port"]))
-                if frame_set["frame"]["body"][0] == packets.connection_request_accepted["id"]:
+                if frame_set["frame"]["body"][0] == packets.connection_request_accepted["id"] and connection["state"] == 1:
                     new_packet = copy(packets.new_connection)
                     new_packet["address"] = (options["ip"], options["port"])
                     new_packet["system_addresses"] = [("255.255.255.0", 19132)] * 10
@@ -125,3 +126,18 @@ def connect():
                     connection["reliable_index"] += 1
                     send_packet["body"] = packets.write_new_connection(new_packet)
                     send_frame(send_packet)
+                    connection["state"] = 2
+                elif frame_set["frame"]["body"][0] == packets.connection_closed["id"]:
+                    connection["state"] == 0
+                    break
+                else:
+                    options["custom_handler"](frame_set["frame"])
+                new_packet = copy(packets.connected_pong)
+                new_packet["time"] = int(time.time())
+                send_packet = copy(packets.frame)
+                send_packet["reliability"] = 2
+                send_packet["reliable_index"] = connection["reliable_index"]
+                connection["reliable_index"] += 1
+                send_packet["body"] = packets.write_new_connection(new_packet)
+                send_frame(send_packet)
+                client_socket.recvfrom(65535)
