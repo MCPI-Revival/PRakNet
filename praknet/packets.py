@@ -322,7 +322,7 @@ def read_connection_request_accepted(data):
         "time": struct.unpack(">Q", data[87:87 + 8])[0]
     }
     offset = 9
-    for i in range(0, 20):
+    for i in range(0, 10):
         packet["system_addresses"].append(read_address(data[offset:offset + 7]))
         offset += 7
     return packet
