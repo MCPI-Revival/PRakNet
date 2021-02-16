@@ -125,21 +125,21 @@ def send_ack(sequance_numbers):
     send_packet(packets.write_acknowledgement(packet))
 
 def packet_handler():
+    step = 0
     while True:
         if connection["state"] == 0:
             pass # Send Unconnected Ping?
         if connection["state"] == 1:
-            step = 0
             if step == 0:
                 send_open_connection_request_1()
                 recv = client_socket.recvfrom(65535)
                 if recv[0][0] == packets.open_connection_reply_1["id"]:
-                    step += 1
+                    step = 1
             elif step == 1:
                 send_open_connection_request_2()
                 recv = client_socket.recvfrom(65535)
                 if recv[0][0] == packets.open_connection_reply_2["id"]:
-                    step += 1
+                    step = 2
             elif step == 2:
                 send_connection_request()
                 recv = client_socket.recvfrom(65535)
@@ -149,7 +149,7 @@ def packet_handler():
                         send_ack([frame_set["sequence_number"]])
                         packet = packets.read_connection_request_accepted(frame_set["frame"]["body"])
                         send_new_connection(packet["time"])
-                        step += 1
+                        step = 0
         elif connection["state"] == 2:
             recv = client_socket.recvfrom(65535)
             if 0x80 <= recv[0][0] <= 0x8f:
