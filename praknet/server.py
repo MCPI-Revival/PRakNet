@@ -106,8 +106,6 @@ def packet_handler(data, address):
             server_socket.sendto(packets.write_acknowledgement(new_packet), address)
             frame = frame_set["frame"]
             identifier = frame["body"][0]
-            if options["debug"]:
-                print("Received frame -> " + str(hex(identifier)))
             if identifier < 0x80:
                 if not connection["is_connected"]:
                     if identifier == packets.connection_request["id"]:
@@ -118,8 +116,6 @@ def packet_handler(data, address):
                         send_frame(packet, address)
                     elif identifier == packets.new_connection["id"]:
                         packet = packets.read_new_connection(frame["body"])
-                        if options["debug"]:
-                            print(packet)
                         connection["is_connected"] = True
                 elif identifier == packets.connection_closed["id"]:
                     remove_connection(address)
@@ -129,7 +125,9 @@ def packet_handler(data, address):
                     packet["reliability"] = 0
                     packet["body"] = body
                     send_frame(packet, address)
-            if connection["is_connected"]:
+            elif connection["is_connected"]:
+                if options["debug"]:
+                    print("Received frame -> " + str(hex(identifier)))
                 options["custom_handler"](frame, address)
     elif identifier == packets.unconnected_ping["id"]:
         server_socket.sendto(handler.handle_unconnected_ping(data), address)
