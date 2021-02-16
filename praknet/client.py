@@ -35,6 +35,7 @@ from praknet import handler
 from praknet import packets
 import socket
 import struct
+import time
 
 options = {
     "ip": "0.0.0.0",
@@ -99,8 +100,8 @@ def connect():
             send_packet["reliability"] = 2
             send_packet["reliable_index"] = connection["reliable_index"]
             connection["reliable_index"] += 1
-            send_packet["body"] = packets.write_open_connection_request_2(new_packet)
-            server.send_frame(packets.write_connection_request(new_packet), address)
+            send_packet["body"] = packets.write_connection_request(new_packet)
+            server.send_frame(packets.write_frame_set(new_packet), address)
             recv = client_socket.recvfrom(65535)
             if recv[0][0] == packets.ack["id"]:
                 print("ACK")

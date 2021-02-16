@@ -306,7 +306,7 @@ def read_connection_request(data):
     }
 
 def write_connection_request(packet):
-    data += bytes([packet["id"]])
+    data = bytes([packet["id"]])
     data += struct.pack(">Q", packet["client_guid"])
     data += struct.pack(">Q", packet["request_time"])
     data += bytes([packet["use_security"]])
