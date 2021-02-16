@@ -84,7 +84,7 @@ def send_reliable(data):
     
 def send_unconnected_ping():
     packet = copy(packets.unconnected_ping_open_connections)
-    packet["time"] = time.time()
+    packet["time"] = int(time.time())
     packet["magic"] = options["magic"]
     send_packet(packets.write_unconnected_ping(packet))
     
