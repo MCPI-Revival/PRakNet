@@ -35,7 +35,6 @@ from praknet import packets
 import socket
 import struct
 import time
-import threading
 
 options = {
     "ip": "0.0.0.0",
@@ -45,8 +44,7 @@ options = {
     "debug": False,
     "custom_handler": lambda frame: 0,
     "magic": b"\x00\xff\xff\x00\xfe\xfe\xfe\xfe\xfd\xfd\xfd\xfd\x12\x34\x56\x78",
-    "mtu_size": 512,
-    "shutdown": True
+    "mtu_size": 512
 }
 
 # State 0: Offline
@@ -135,7 +133,7 @@ def send_ack(sequence_numbers):
 
 def packet_handler():
     step = 0
-    while not options["shutdown"]:
+    while True:
         if connection["state"] == 0:
             send_unconnected_ping()
             recv = client_socket.recvfrom(65535)
@@ -175,8 +173,3 @@ def packet_handler():
                 else:
                     options["custom_handler"](frame_set["frame"])
                 send_connected_ping()
-                
-def run():
-    options["shutdown"] = False
-    packet_handler_thread = threading.Thread(target = packet_handler())
-    packet_handler_thread.start()
