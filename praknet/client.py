@@ -65,7 +65,7 @@ def send_frame(packet):
     new_packet["frame"] = packet
     client_socket.sendto(packets.write_frame_set(new_packet), (options["ip"], options["port"]))
     connection["sent_packets"].append(packet)
-    connection["sequence_number"] += 1  
+    connection["sequence_number"] += 1
 
 def connect():
     connection["state"] = 1
@@ -91,4 +91,23 @@ def connect():
             if recv[0][0] == packets.open_connection_reply_2["id"]:
                 step = 2
         elif step == 2:
-            print("Offline message sequence completed")
+            new_packet = copy(packets.connection_request)
+            new_packet["client_guid"] = options["guid"]
+            new_packet["request_time"] = int(time.time())
+            new_packet["use_security"] = 0
+            send_packet = copy(packets.frame)
+            send_packet["reliability"] = 2
+            send_packet["reliable_index"] = connection["reliable_index"]
+            connection["reliable_index"] += 1
+            send_packet["body"] = packets.write_open_connection_request_2(new_packet)
+            server.send_frame(packets.write_connection_request(new_packet), address)
+            recv = client_socket.recvfrom(65535)
+            if recv[0][0] == packets.ack["id"]:
+                print("ACK")
+            elif recv[0][0] == packets.nack["id"]:
+                print("NACK")
+            elif 0x80 <= recv[0][0] <= 0x8f:
+                frame_set = packets.read_frame_set(recv[0])
+                if frame_set["frame"][0] == packets.connection_request_accepted["id"]:
+                    print("CONNECTION REQUEST ACCEPTED")
+            
