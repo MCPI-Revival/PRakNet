@@ -132,7 +132,7 @@ def connect():
                     break
                 else:
                     options["custom_handler"](frame_set["frame"])
-                new_packet = copy(packets.connected_pong)
+                new_packet = copy(packets.connected_ping)
                 new_packet["time"] = int(time.time())
                 send_packet = copy(packets.frame)
                 send_packet["reliability"] = 2
