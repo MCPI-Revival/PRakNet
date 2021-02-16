@@ -60,34 +60,41 @@ connection = {
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
+def send_packet(data):
+    client_socket.sendto(data, (options["ip"], options["port"]))
+
 def send_frame(packet):
     new_packet = copy(packets.frame_set)
     new_packet["sequence_number"] = connection["sequence_number"]
     new_packet["frame"] = packet
-    client_socket.sendto(packets.write_frame_set(new_packet), (options["ip"], options["port"]))
+    send_packet(packets.write_frame_set(new_packet))
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1
+    
+def send_open_connection_request_1():
+    packet = copy(packets.open_connection_request_1)
+    packet["magic"] = options["magic"]
+    packet["protocol_version"] = options["protocol_version"]
+    packet["mtu_size"] = options["mtu_size"]
+    send_packet(packets.write_open_connection_request_1(packet))
+    
+def send_open_connection_request_2():
+    packet = copy(packets.open_connection_request_2)
+    packet["magic"] = options["magic"]
+    packet["server_address"] = (options["ip"], options["port"])
+    packet["mtu_size"] = options["mtu_size"]
+    packet["client_guid"] = options["guid"]
+    send_packet(packets.write_open_connection_request_2(packet))
 
 def connect():
     connection["state"] = 1
     step = 0
     while True:
         if step == 0:
-            new_packet = copy(packets.open_connection_request_1)
-            new_packet["magic"] = options["magic"]
-            new_packet["protocol_version"] = options["protocol_version"]
-            new_packet["mtu_size"] = options["mtu_size"]
-            client_socket.sendto(packets.write_open_connection_request_1(new_packet), (options["ip"], options["port"]))
             recv = client_socket.recvfrom(65535)
             if recv[0][0] == packets.open_connection_reply_1["id"]:
                 step = 1
         elif step == 1:
-            new_packet = copy(packets.open_connection_request_2)
-            new_packet["magic"] = options["magic"]
-            new_packet["server_address"] = [options["ip"], options["port"]]
-            new_packet["mtu_size"] = options["mtu_size"]
-            new_packet["client_guid"] = options["guid"]
-            client_socket.sendto(packets.write_open_connection_request_2(new_packet), (options["ip"], options["port"]))
             recv = client_socket.recvfrom(65535)
             if recv[0][0] == packets.open_connection_reply_2["id"]:
                 step = 2
