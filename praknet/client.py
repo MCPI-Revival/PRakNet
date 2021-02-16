@@ -35,6 +35,7 @@ from praknet import packets
 import socket
 import struct
 import time
+import threading
 
 options = {
     "ip": "0.0.0.0",
@@ -44,7 +45,8 @@ options = {
     "debug": False,
     "custom_handler": lambda frame: 0,
     "magic": b"\x00\xff\xff\x00\xfe\xfe\xfe\xfe\xfd\xfd\xfd\xfd\x12\x34\x56\x78",
-    "mtu_size": 512
+    "mtu_size": 512,
+    "shutdown": True
 }
 
 # State 0: Offline
@@ -55,7 +57,8 @@ connection = {
     "sequence_number": 0,
     "reliable_index": 0,
     "sent_packets": [],
-    "state": 0
+    "state": 0,
+    "server_name": None
 }
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -78,6 +81,12 @@ def send_reliable(data):
     connection["reliable_index"] += 1
     packet["body"] = data
     send_frame(packet)
+    
+def send_unconnected_ping():
+    packet = copy(packets.unconnected_ping_open_connections)
+    packet["time"] = time.time()
+    packet["magic"] = options["magic"]
+    send_packet(packets.write_unconnected_ping(packet))
     
 def send_open_connection_request_1():
     packet = copy(packets.open_connection_request_1)
@@ -126,9 +135,13 @@ def send_ack(sequance_numbers):
 
 def packet_handler():
     step = 0
-    while True:
+    while not options["shutdown"]:
         if connection["state"] == 0:
-            pass # Send Unconnected Ping?
+            send_unconnected_ping()
+            recv = client_socket.recvfrom(65535)
+            if recv[0][0] == packets.unconnected_pong["id"]:
+                packet = packets.read_unconnected_pong(recv[0])
+                connection["server_name"] = packet["data"]
         if connection["state"] == 1:
             if step == 0:
                 send_open_connection_request_1()
@@ -162,3 +175,8 @@ def packet_handler():
                 else:
                     options["custom_handler"](frame_set["frame"])
                 send_connected_ping()
+                
+def run():
+    options["shutdown"] = False
+    packet_handler_thread = threading.Thread(target = packet_handler())
+    packet_handler_thread.start()
