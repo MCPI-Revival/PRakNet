@@ -124,9 +124,10 @@ def send_ack(sequance_numbers):
     packet["packets"] = sequence_numbers
     send_packet(packets.write_acknowledgement(packet))
 
-def connect():
-    connection["state"] = 1
+def packet_handler():
     while True:
+        if connection["state"] == 0:
+            pass # Send Unconnected Ping?
         if connection["state"] == 1:
             step = 0
             if step == 0:
