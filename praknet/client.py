@@ -80,7 +80,7 @@ def connect():
             recv = client_socket.recv_from(65535)
             if recv[0][0] == packets.open_connection_reply_1["id"]:
                 step = 1
-        if step == 1:
+        elif step == 1:
             new_packet = copy(packets.open_connection_request_2)
             new_packet["magic"] = options["magic"]
             new_packet["server_address"] = [options["ip"], options["port"]]
@@ -88,3 +88,7 @@ def connect():
             new_packet["client_guid"] = options["guid"]
             client_socket.sendto(packets.write_open_connection_request_2(new_packet), [options["ip"], options["port"]])
             recv = client_socket.recv_from(65535)
+            if recv[0][0] == packets.open_connection_reply_2["id"]:
+                step = 2
+        elif step == 2:
+            print("Offline message sequence completed")
