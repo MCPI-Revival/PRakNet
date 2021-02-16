@@ -140,4 +140,3 @@ def connect():
                 connection["reliable_index"] += 1
                 send_packet["body"] = packets.write_new_connection(new_packet)
                 send_frame(send_packet)
-                client_socket.recvfrom(65535)
