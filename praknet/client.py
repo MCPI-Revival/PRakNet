@@ -171,5 +171,7 @@ def packet_handler():
                 elif frame_set["frame"]["body"][0] == packets.connected_pong["id"]:
                     pass
                 else:
+                    if options["debug"]:
+                        print("Received frame -> " + str(hex(frame_set["frame"]["body"][0])))
                     options["custom_handler"](frame_set["frame"])
                 send_connected_ping()
