@@ -78,6 +78,7 @@ def handle_connection_request(data, address):
     new_packet["system_addresses"] = [("255.255.255.255", 19132)] * 10
     new_packet["request_time"] = packet["request_time"]
     new_packet["time"] = int(time())
+    server.get_connection(address)["guid"] = packet["client_guid"]
     return packets.write_connection_request_accepted(new_packet)
 
 def handle_connected_ping(data):
