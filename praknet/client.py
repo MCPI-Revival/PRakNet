@@ -63,7 +63,7 @@ def send_frame(packet):
     new_packet = copy(packets.frame_set)
     new_packet["sequence_number"] = connection["sequence_number"]
     new_packet["frame"] = packet
-    client_socket.sendto(packets.write_frame_set(new_packet), [options["ip"], options["port"]])
+    client_socket.sendto(packets.write_frame_set(new_packet), (options["ip"], options["port"]))
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1  
 
@@ -76,8 +76,8 @@ def connect():
             new_packet["magic"] = options["magic"]
             new_packet["protocol_version"] = options["protocol_version"]
             new_packet["mtu_size"] = options["mtu_size"]
-            client_socket.sendto(packets.write_open_connection_request_1(new_packet), [options["ip"], options["port"]])
-            recv = client_socket.recv_from(65535)
+            client_socket.sendto(packets.write_open_connection_request_1(new_packet), (options["ip"], options["port"]))
+            recv = client_socket.recvfrom(65535)
             if recv[0][0] == packets.open_connection_reply_1["id"]:
                 step = 1
         elif step == 1:
@@ -86,8 +86,8 @@ def connect():
             new_packet["server_address"] = [options["ip"], options["port"]]
             new_packet["mtu_size"] = options["mtu_size"]
             new_packet["client_guid"] = options["guid"]
-            client_socket.sendto(packets.write_open_connection_request_2(new_packet), [options["ip"], options["port"]])
-            recv = client_socket.recv_from(65535)
+            client_socket.sendto(packets.write_open_connection_request_2(new_packet), (options["ip"], options["port"]))
+            recv = client_socket.recvfrom(65535)
             if recv[0][0] == packets.open_connection_reply_2["id"]:
                 step = 2
         elif step == 2:
