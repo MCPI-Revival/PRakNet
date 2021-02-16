@@ -106,9 +106,9 @@ def connect():
                 send_frame(send_packet)
             recv = client_socket.recvfrom(65535)
             if recv[0][0] == packets.ack["id"]:
-                print("ACK")
+                pass # ACK
             elif recv[0][0] == packets.nack["id"]:
-                print("NACK")
+                pass # NACK
             elif 0x80 <= recv[0][0] <= 0x8f:
                 frame_set = packets.read_frame_set(recv[0])
                 new_packet = copy(packets.ack)
