@@ -108,6 +108,7 @@ def send_new_connection(ping_time):
     packet["ping_time"] = int(ping_time)
     packet["pong_time"] = int(time.time())
     send_reliable(packets.write_new_connection(packet))
+    connection["state"] = 2
     
 def send_connected_ping():
     packet = copy(packets.connected_ping)
@@ -118,35 +119,45 @@ def send_connection_closed():
     send_reliable(bytes([packets.connection_closed["id"]]))
     connection["state"] == 0
 
+def send_ack(sequance_numbers):
+    packet = copy(packets.ack)
+    packet["packets"] = sequence_numbers
+    send_packet(packets.write_acknowledgement(packet))
+
 def connect():
     connection["state"] = 1
-    step = 0
     while True:
-        if step == 0:
+        if connection["state"] == 1:
+            step = 0
+            if step == 0:
+                send_open_connection_request_1()
+                recv = client_socket.recvfrom(65535)
+                if recv[0][0] == packets.open_connection_reply_1["id"]:
+                    step += 1
+            elif step == 1:
+                send_open_connection_request_2()
+                recv = client_socket.recvfrom(65535)
+                if recv[0][0] == packets.open_connection_reply_2["id"]:
+                    step += 1
+            elif step == 2:
+                send_connection_request()
+                recv = client_socket.recvfrom(65535)
+                if 0x80 <= recv[0][0] <= 0x8f:
+                    frame_set = packets.read_frame_set(recv[0])
+                    if frame_set["frame"]["body"][0] == packets.connection_request_accepted["id"]:
+                        send_ack([frame_set["sequence_number"]])
+                        packet = packets.read_connection_request_accepted(frame_set["frame"]["body"])
+                        send_new_connection(packet["time"])
+                        step += 1
+        elif connection["state"] == 2:
             recv = client_socket.recvfrom(65535)
-            if recv[0][0] == packets.open_connection_reply_1["id"]:
-                step = 1
-        elif step == 1:
-            recv = client_socket.recvfrom(65535)
-            if recv[0][0] == packets.open_connection_reply_2["id"]:
-                step = 2
-        elif step == 2:
-            if connection["state"] == 1:
-                pass
-            recv = client_socket.recvfrom(65535)
-            if recv[0][0] == packets.ack["id"]:
-                pass # ACK
-            elif recv[0][0] == packets.nack["id"]:
-                pass # NACK
-            elif 0x80 <= recv[0][0] <= 0x8f:
+            if 0x80 <= recv[0][0] <= 0x8f:
                 frame_set = packets.read_frame_set(recv[0])
-                new_packet = copy(packets.ack)
-                new_packet["packets"].append(frame_set["sequence_number"])
-                client_socket.sendto(packets.write_acknowledgement(new_packet), (options["ip"], options["port"]))
-                if frame_set["frame"]["body"][0] == packets.connection_request_accepted["id"] and connection["state"] == 1:
-                    connection["state"] = 2
-                elif frame_set["frame"]["body"][0] == packets.connection_closed["id"]:
-                    connection["state"] == 0
-                    break
+                send_ack([frame_set["sequence_number"]])
+                if frame_set["frame"]["body"][0] == packets.connection_closed["id"]:
+                    connection["state"] = 0
+                elif frame_set["frame"]["body"][0] == packets.connected_pong["id"]:
+                    pass
                 else:
                     options["custom_handler"](frame_set["frame"])
+                send_connected_ping()
