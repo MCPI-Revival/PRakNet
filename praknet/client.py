@@ -71,6 +71,14 @@ def send_frame(packet):
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1
     
+def send_reliable(data):
+    packet = copy(packets.frame)
+    packet["reliability"] = 2
+    packet["reliable_index"] = connection["reliable_index"]
+    connection["reliable_index"] += 1
+    packet["body"] = data
+    send_frame(packet)
+    
 def send_open_connection_request_1():
     packet = copy(packets.open_connection_request_1)
     packet["magic"] = options["magic"]
@@ -85,6 +93,30 @@ def send_open_connection_request_2():
     packet["mtu_size"] = options["mtu_size"]
     packet["client_guid"] = options["guid"]
     send_packet(packets.write_open_connection_request_2(packet))
+    
+def send_connection_request():
+    packet = copy(packets.connection_request)
+    packet["client_guid"] = options["guid"]
+    packet["request_time"] = int(time.time())
+    packet["use_security"] = 0
+    send_reliable(packets.write_connection_request(packet))
+    
+def send_new_connection(ping_time):
+    packet = copy(packets.new_connection)
+    packet["address"] = (options["ip"], options["port"])
+    packet["system_addresses"] = [("255.255.255.0", 19132)] * 10
+    packet["ping_time"] = int(ping_time)
+    packet["pong_time"] = int(time.time())
+    send_reliable(packets.write_new_connection(packet))
+    
+def send_connected_ping():
+    packet = copy(packets.connected_ping)
+    packet["time"] = int(time.time())
+    send_reliable(packets.write_connected_ping(packet))
+    
+def send_connection_closed():
+    send_reliable(bytes([packets.connection_closed["id"]]))
+    connection["state"] == 0
 
 def connect():
     connection["state"] = 1
@@ -100,16 +132,7 @@ def connect():
                 step = 2
         elif step == 2:
             if connection["state"] == 1:
-                new_packet = copy(packets.connection_request)
-                new_packet["client_guid"] = options["guid"]
-                new_packet["request_time"] = int(time.time())
-                new_packet["use_security"] = 0
-                send_packet = copy(packets.frame)
-                send_packet["reliability"] = 2
-                send_packet["reliable_index"] = connection["reliable_index"]
-                connection["reliable_index"] += 1
-                send_packet["body"] = packets.write_connection_request(new_packet)
-                send_frame(send_packet)
+                pass
             recv = client_socket.recvfrom(65535)
             if recv[0][0] == packets.ack["id"]:
                 pass # ACK
@@ -121,28 +144,9 @@ def connect():
                 new_packet["packets"].append(frame_set["sequence_number"])
                 client_socket.sendto(packets.write_acknowledgement(new_packet), (options["ip"], options["port"]))
                 if frame_set["frame"]["body"][0] == packets.connection_request_accepted["id"] and connection["state"] == 1:
-                    new_packet = copy(packets.new_connection)
-                    new_packet["address"] = (options["ip"], options["port"])
-                    new_packet["system_addresses"] = [("255.255.255.0", 19132)] * 10
-                    new_packet["ping_time"] = int(time.time())
-                    new_packet["pong_time"] = int(time.time())
-                    send_packet = copy(packets.frame)
-                    send_packet["reliability"] = 2
-                    send_packet["reliable_index"] = connection["reliable_index"]
-                    connection["reliable_index"] += 1
-                    send_packet["body"] = packets.write_new_connection(new_packet)
-                    send_frame(send_packet)
                     connection["state"] = 2
                 elif frame_set["frame"]["body"][0] == packets.connection_closed["id"]:
                     connection["state"] == 0
                     break
                 else:
                     options["custom_handler"](frame_set["frame"])
-                new_packet = copy(packets.connected_ping)
-                new_packet["time"] = int(time.time())
-                send_packet = copy(packets.frame)
-                send_packet["reliability"] = 2
-                send_packet["reliable_index"] = connection["reliable_index"]
-                connection["reliable_index"] += 1
-                send_packet["body"] = packets.write_new_connection(new_packet)
-                send_frame(send_packet)
