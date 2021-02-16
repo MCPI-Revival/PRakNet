@@ -128,7 +128,7 @@ def send_connection_closed():
     send_reliable(bytes([packets.connection_closed["id"]]))
     connection["state"] == 0
 
-def send_ack(sequance_numbers):
+def send_ack(sequence_numbers):
     packet = copy(packets.ack)
     packet["packets"] = sequence_numbers
     send_packet(packets.write_acknowledgement(packet))
@@ -142,7 +142,7 @@ def packet_handler():
             if recv[0][0] == packets.unconnected_pong["id"]:
                 packet = packets.read_unconnected_pong(recv[0])
                 connection["server_name"] = packet["data"]
-        if connection["state"] == 1:
+        elif connection["state"] == 1:
             if step == 0:
                 send_open_connection_request_1()
                 recv = client_socket.recvfrom(65535)
