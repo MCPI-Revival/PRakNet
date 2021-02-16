@@ -13,6 +13,8 @@ Windows ->
 
 Usage:
 
+server ->
+
 ```
 from copy import copy
 from praknet import packets
