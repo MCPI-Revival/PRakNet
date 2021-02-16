@@ -110,6 +110,18 @@ def connect():
                 print("NACK")
             elif 0x80 <= recv[0][0] <= 0x8f:
                 frame_set = packets.read_frame_set(recv[0])
-                # Send ACK? 
+                new_packet = copy(packets.ack)
+                new_packet["packets"].append(frame_set["sequence_number"])
+                client_socket.sendto(packets.write_acknowledgement(new_packet), (options["ip"], options["port"]))
                 if frame_set["frame"]["body"][0] == packets.connection_request_accepted["id"]:
-                    print("--------------------------------------------")
+                    new_packet = copy(packets.new_connection)
+                    new_packet["address"] = (options["ip"], options["port"])
+                    new_packet["system_addresses"] = [("255.255.255.0", 19132)] * 10
+                    new_packet["ping_time"] = int(time.time())
+                    new_packet["pong_time"] = int(time.time())
+                    send_packet = copy(packets.frame)
+                    send_packet["reliability"] = 2
+                    send_packet["reliable_index"] = connection["reliable_index"]
+                    connection["reliable_index"] += 1
+                    send_packet["body"] = packets.write_new_connection(new_packet)
+                    send_frame(send_packet)
