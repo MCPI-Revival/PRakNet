@@ -69,17 +69,22 @@ def send_frame(packet):
 
 def connect():
     connection["state"] = 1
-    new_packet = copy(packets.open_connection_request_1)
-    new_packet["magic"] = options["magic"]
-    new_packet["protocol_version"] = options["protocol_version"]
-    new_packet["mtu_size"] = options["mtu_size"]
-    client_socket.sendto(packets.write_open_connection_request_1(new_packet), [options["ip"], options["port"]])
-    client_socket.recv_from(65535)
-    new_packet = copy(packets.open_connection_request_2)
-    new_packet["magic"] = options["magic"]
-    new_packet["server_address"] = [options["ip"], options["port"]]
-    new_packet["mtu_size"] = options["mtu_size"]
-    new_packet["client_guid"] = options["guid"]
-    client_socket.sendto(packets.write_open_connection_request_2(new_packet), [options["ip"], options["port"]])
-    client_socket.recv_from(65535)
-    
+    step = 0
+    while True:
+        if step == 0:
+            new_packet = copy(packets.open_connection_request_1)
+            new_packet["magic"] = options["magic"]
+            new_packet["protocol_version"] = options["protocol_version"]
+            new_packet["mtu_size"] = options["mtu_size"]
+            client_socket.sendto(packets.write_open_connection_request_1(new_packet), [options["ip"], options["port"]])
+            recv = client_socket.recv_from(65535)
+            if recv[0][0] == packets.open_connection_reply_1["id"]:
+                step = 1
+        if step == 1:
+            new_packet = copy(packets.open_connection_request_2)
+            new_packet["magic"] = options["magic"]
+            new_packet["server_address"] = [options["ip"], options["port"]]
+            new_packet["mtu_size"] = options["mtu_size"]
+            new_packet["client_guid"] = options["guid"]
+            client_socket.sendto(packets.write_open_connection_request_2(new_packet), [options["ip"], options["port"]])
+            recv = client_socket.recv_from(65535)
