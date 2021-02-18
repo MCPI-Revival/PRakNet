@@ -55,7 +55,6 @@ def add_connection(address):
         "mtu_size": 0,
         "address": address,
         "is_connected": False,
-        "sent_packets": [],
         "sequence_number": 0,
         "recovery_queue": {}
     }
