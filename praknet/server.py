@@ -56,7 +56,8 @@ def add_connection(address):
         "address": address,
         "is_connected": False,
         "sent_packets": [],
-        "sequence_number": 0
+        "sequence_number": 0,
+        "recovery_queue": {}
     }
 
 def remove_connection(address):
@@ -73,12 +74,6 @@ def get_connection(address):
     token = str(address[0]) + ":" + str(address[1])
     if token in connections:
         return connections[token]
-
-def get_last_packet(address):
-    connection = get_connection(address)
-    queue = connection["sent_packets"]
-    if len(queue) > 0:
-        return queue[-1]
     
 def send_frame(packet, address):
     connection = get_connection(address)
@@ -86,7 +81,7 @@ def send_frame(packet, address):
     new_packet["sequence_number"] = connection["sequence_number"]
     new_packet["frame"] = packet
     server_socket.sendto(packets.write_frame_set(new_packet), address)
-    connection["sent_packets"].append(packet)
+    connection["recovery_queue"][connection["sequence_number"]] = new_packet
     connection["sequence_number"] += 1
 
 def broadcast_frame(packet):
@@ -98,7 +93,19 @@ def packet_handler(data, address):
     connection = get_connection(address)
     if connection != None:
         if identifier == packets.nack["id"]:
-            send_frame(get_last_packet(address), address)
+            packet = packets.read_acknowledgement(data)
+            for sequence_number in packet["packets"]:
+                if sequence_number in connection["recovery_queue"]:
+                    lost_packet = connection["recovery_queue"][sequence_number]
+                    lost_packet["sequence_number"] = connection["sequence_number"]
+                    connection["sequence_number"] += 1
+                    server_socket.sendto(packets.write_frame_set(lost_packet), address)
+                    del connection["recovery_queue"][sequence_number]
+        elif identifier == packets.ack["id"]:
+            packet = packets.read_acknowledgement(data)
+            for sequence_number in packet["packets"]:
+                if sequence_number in connection["recovery_queue"]:
+                    del connection["recovery_queue"][sequence_number]
         elif 0x80 <= identifier <= 0x8f:
             frame_set = packets.read_frame_set(data)
             new_packet = copy(packets.ack)
