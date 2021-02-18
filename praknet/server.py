@@ -58,7 +58,9 @@ def add_connection(address):
         "sequence_number": 0,
         "received_sequence_number": 0,
         "received_sequence_numbers": [],
-        "recovery_queue": {}
+        "recovery_queue": {},
+        "ack_queue": [],
+        "nack_queue": []
     }
 
 def remove_connection(address):
@@ -88,6 +90,25 @@ def send_frame(packet, address):
 def broadcast_frame(packet):
     for connection in connections.values():
         send_frame(packet, connection["address"])
+        
+def send_ack_queue(address):
+    connection = get_connection(address)
+    packet = copy(packets.ack)
+    packet["packets"] = connection["ack_queue"]
+    server_socket.sendto(packets.write_acknowledgement(packet), address)
+    connection["ack_queue"] = []
+    
+def send_nack_queue(address):
+    connection = get_connection(address)
+    packet = copy(packets.nack)
+    packet["packets"] = connection["nack_queue"]
+    server_socket.sendto(packets.write_acknowledgement(packet), address)
+    connection["nack_queue"] = []
+    
+def broadcast_acknowledgement_queues():
+    for connection in connections.values():
+        send_ack_queue(connection["address"])
+        send_nack_queue(connection["address"])
     
 def packet_handler(data, address):
     identifier = data[0]
@@ -112,16 +133,12 @@ def packet_handler(data, address):
             if frame_set["sequence_number"] in connection["received_sequence_numbers"]:
                 return
             connection["received_sequence_numbers"].append(frame_set["sequence_number"])
-            new_packet = copy(packets.ack)
-            new_packet["packets"].append(frame_set["sequence_number"])
-            server_socket.sendto(packets.write_acknowledgement(new_packet), address)
+            connection["ack_queue"].append(frame_set["sequence_number"])
             hole_length = frame_set["sequence_number"] - connection["received_sequence_number"]
             if hole_length > 0:
-                new_packet = copy(packets.nack)
                 for sequence_number in range(connection["received_sequence_number"] + 1, hole_length):
                     if sequence_number not in connection["received_sequence_numbers"]:
-                        new_packet["packets"].append(sequence_number)
-                server_socket.sendto(packets.write_acknowledgement(new_packet), address)
+                        connection["nack_queue"].append(sequence_number)
             connection["received_sequence_number"] = frame_set["sequence_number"]                  
             frame = frame_set["frame"]
             identifier = frame["body"][0]
@@ -169,3 +186,4 @@ def run():
         if recv != None:
             data, address = recv
             packet_handler(data, address)
+        broadcast_acknowledgement_queues()
