@@ -56,6 +56,8 @@ def add_connection(address):
         "address": address,
         "is_connected": False,
         "sequence_number": 0,
+        "received_sequence_number": 0,
+        "received_sequence_numbers": [],
         "recovery_queue": {}
     }
 
@@ -107,9 +109,16 @@ def packet_handler(data, address):
                     del connection["recovery_queue"][sequence_number]
         elif 0x80 <= identifier <= 0x8f:
             frame_set = packets.read_frame_set(data)
+            if frame_set["sequence_number"] in connection["received_sequence_numbers"]:
+                return
+            connection["received_sequence_numbers"].append(frame_set["sequence_number"])
             new_packet = copy(packets.ack)
             new_packet["packets"].append(frame_set["sequence_number"])
             server_socket.sendto(packets.write_acknowledgement(new_packet), address)
+            #hole_length = connection["received_sequence_number"] - frame_set["sequence_number"]
+            #if hole_length > 0:
+                #new_packet = copy(packets.nack)
+                #new_packet["packets"]
             frame = frame_set["frame"]
             identifier = frame["body"][0]
             if identifier < 0x80:
