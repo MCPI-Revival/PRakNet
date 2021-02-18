@@ -401,9 +401,9 @@ def read_acknowledgement(data):
     count = struct.unpack(">H", data[1:1 + 2])[0]
     offset = 3
     for i in range(0, count):
-        range = data[offset]
+        is_single = data[offset] > 0
         offset += 1
-        if range == 0:
+        if not is_single:
             start_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
             offset += 3
             end_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
