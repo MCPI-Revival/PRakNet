@@ -115,10 +115,14 @@ def packet_handler(data, address):
             new_packet = copy(packets.ack)
             new_packet["packets"].append(frame_set["sequence_number"])
             server_socket.sendto(packets.write_acknowledgement(new_packet), address)
-            #hole_length = connection["received_sequence_number"] - frame_set["sequence_number"]
-            #if hole_length > 0:
-                #new_packet = copy(packets.nack)
-                #new_packet["packets"]
+            hole_length = frame_set["sequence_number"] - connection["received_sequence_number"]
+            if hole_length > 0:
+                new_packet = copy(packets.nack)
+                for sequence_number in range(connection["received_sequence_number"] + 1, holeCount):
+                    if sequence_number not in connection["received_sequence_numbers"]:
+                        new_packet["packets"].append(sequence_number)
+                server_socket.sendto(packets.write_acknowledgement(new_packet), address)
+            connection["received_sequence_number"] = frame_set["sequence_number"]                  
             frame = frame_set["frame"]
             identifier = frame["body"][0]
             if identifier < 0x80:
