@@ -67,7 +67,7 @@ def send_packet(data):
 def send_frame(packet):
     new_packet = copy(packets.frame_set)
     new_packet["sequence_number"] = connection["sequence_number"]
-    new_packet["frame"] = packet
+    new_packet["frames"] = [packet]
     send_packet(packets.write_frame_set(new_packet))
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1
@@ -156,22 +156,24 @@ def packet_handler():
                 recv = client_socket.recvfrom(65535)
                 if 0x80 <= recv[0][0] <= 0x8f:
                     frame_set = packets.read_frame_set(recv[0])
-                    if frame_set["frame"]["body"][0] == packets.connection_request_accepted["id"]:
-                        send_ack([frame_set["sequence_number"]])
-                        packet = packets.read_connection_request_accepted(frame_set["frame"]["body"])
-                        send_new_connection(packet["time"])
-                        step = 0
+                    send_ack([frame_set["sequence_number"]])
+                    for frame in frame_set["frames"]:
+                        if frame["body"][0] == packets.connection_request_accepted["id"]:
+                            packet = packets.read_connection_request_accepted(frame["body"])
+                            send_new_connection(packet["time"])
+                            step = 0
         elif connection["state"] == 2:
             recv = client_socket.recvfrom(65535)
             if 0x80 <= recv[0][0] <= 0x8f:
                 frame_set = packets.read_frame_set(recv[0])
                 send_ack([frame_set["sequence_number"]])
-                if frame_set["frame"]["body"][0] == packets.connection_closed["id"]:
-                    connection["state"] = 0
-                elif frame_set["frame"]["body"][0] == packets.connected_pong["id"]:
-                    pass
-                else:
-                    if options["debug"]:
-                        print("Received frame -> " + str(hex(frame_set["frame"]["body"][0])))
-                    options["custom_handler"](frame_set["frame"])
+                for frame in frame_set["frames"]:
+                    if frame["body"][0] == packets.connection_closed["id"]:
+                        connection["state"] = 0
+                    elif frame["body"][0] == packets.connected_pong["id"]:
+                        pass
+                    else:
+                        if options["debug"]:
+                            print("Received frame -> " + str(hex(frame["body"][0])))
+                        options["custom_handler"](frame)
                 send_connected_ping()
