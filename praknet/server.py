@@ -60,7 +60,12 @@ def add_connection(address):
         "received_sequence_numbers": [],
         "recovery_queue": {},
         "ack_queue": [],
-        "nack_queue": []
+        "nack_queue": [],
+        "queue": {
+            "id": 0x80,
+            "sequence_number": 0,
+            "frames": []
+        }
     }
 
 def remove_connection(address):
@@ -78,18 +83,33 @@ def get_connection(address):
     if token in connections:
         return connections[token]
     
-def send_frame(packet, address):
+def send_queue(address):
     connection = get_connection(address)
-    new_packet = copy(packets.frame_set)
-    new_packet["sequence_number"] = connection["sequence_number"]
-    new_packet["frames"] = [packet]
-    server_socket.sendto(packets.write_frame_set(new_packet), address)
-    connection["recovery_queue"][connection["sequence_number"]] = new_packet
-    connection["sequence_number"] += 1
-
-def broadcast_frame(packet):
+    if len(connection["queue"]["frames"]) > 0:
+        connection["queue"]["sequence_number"] = connection["sequence_number"]
+        connection["sequence_number"] += 1
+        connection["recovery_queue"][connection["queue"]["sequence_number"]] = connection["queue"]
+        server_socket.sendto(packets.write_frame_set(connection["queue"]), address)
+        
+def broadcast_queue():
     for connection in connections.values():
-        send_frame(packet, connection["address"])
+        send_queue(connection["address"])
+    
+def send_frame(packet, address, is_imediate = True):
+    connection = get_connection(address)
+    if is_imediate:
+        connection["queue"]["frames"].append(packet)
+        send_queue(address)
+    else:
+        frame_length = len(packets.write_frame(packet))
+        queue_length = len(packets.write_frame_set(connection["queue"]))
+        if queue_length + frame_length >= connection["mtu_size"]:
+            send_queue(address)
+        connection["queue"]["frames"].append(packet)
+
+def broadcast_frame(packet, is_imediate = True):
+    for connection in connections.values():
+        send_frame(packet, connection["address"], is_imediate)
         
 def send_ack_queue(address):
     connection = get_connection(address)
@@ -160,7 +180,7 @@ def packet_handler(data, address):
                         packet = copy(packets.frame)
                         packet["reliability"] = 0
                         packet["body"] = body
-                        send_frame(packet, address)
+                        send_frame(packet, address, False)
                 elif connection["is_connected"]:
                     if options["debug"]:
                         print("Received frame -> " + str(hex(identifier)))
@@ -187,3 +207,4 @@ def run():
             data, address = recv
             packet_handler(data, address)
         broadcast_acknowledgement_queues()
+        broadcast_queue()
