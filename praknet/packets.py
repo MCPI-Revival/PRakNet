@@ -151,7 +151,7 @@ ack = {
 frame_set = {
     "id": 0x80,
     "sequence_number": None,
-    "frame": None
+    "frames": []
 }
 
 frame = {
@@ -518,14 +518,30 @@ def write_frame(packet):
     return data
 
 def read_frame_set(data):
-    return {
+    packet = {
         "id": data[0],
         "sequence_number": struct.unpack('<L', data[1:1 + 3] + b'\x00')[0],
-        "frame": read_frame(data[4:])
+        "frames": []
     }
+    offset = 4
+    while not len(data) <= offset:
+        frame = read_frame(data[offset:])
+        offset += 3
+        if frame["reliable_index"] is not None:
+            offset += 3
+        if frame["sequence_index"] is not None:
+            offset += 3
+        if frame["order"]["index"] is not None:
+            offset += 4
+        if frame["is_fragmented"]:
+            offset += 10
+        offset += len(frame["body"])
+        packet["frames"].append(frame)
+        return packet
 
 def write_frame_set(packet):
     data = bytes([packet["id"]])
     data += struct.pack("<L", packet["sequence_number"])[0:-1]
-    data += write_frame(packet["frame"])
+    for frame in packet["frames"]:
+        data += write_frame(frame)
     return data

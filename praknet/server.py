@@ -82,7 +82,7 @@ def send_frame(packet, address):
     connection = get_connection(address)
     new_packet = copy(packets.frame_set)
     new_packet["sequence_number"] = connection["sequence_number"]
-    new_packet["frame"] = packet
+    new_packet["frames"] = [packet]
     server_socket.sendto(packets.write_frame_set(new_packet), address)
     connection["recovery_queue"][connection["sequence_number"]] = new_packet
     connection["sequence_number"] += 1
@@ -140,31 +140,31 @@ def packet_handler(data, address):
                     if sequence_number not in connection["received_sequence_numbers"]:
                         connection["nack_queue"].append(sequence_number)
             connection["received_sequence_number"] = frame_set["sequence_number"]                  
-            frame = frame_set["frame"]
-            identifier = frame["body"][0]
-            if identifier < 0x80:
-                if not connection["is_connected"]:
-                    if identifier == packets.connection_request["id"]:
-                        body = handler.handle_connection_request(frame["body"], address)
+            for frame in frame_set["frames"]:
+                identifier = frame["body"][0]
+                if identifier < 0x80:
+                    if not connection["is_connected"]:
+                        if identifier == packets.connection_request["id"]:
+                            body = handler.handle_connection_request(frame["body"], address)
+                            packet = copy(packets.frame)
+                            packet["reliability"] = 0
+                            packet["body"] = body
+                            send_frame(packet, address)
+                        elif identifier == packets.new_connection["id"]:
+                            packet = packets.read_new_connection(frame["body"])
+                            connection["is_connected"] = True
+                    elif identifier == packets.connection_closed["id"]:
+                        remove_connection(address)
+                    elif identifier == packets.connected_ping["id"]:
+                        body = handler.handle_connected_ping(frame["body"])
                         packet = copy(packets.frame)
                         packet["reliability"] = 0
                         packet["body"] = body
                         send_frame(packet, address)
-                    elif identifier == packets.new_connection["id"]:
-                        packet = packets.read_new_connection(frame["body"])
-                        connection["is_connected"] = True
-                elif identifier == packets.connection_closed["id"]:
-                    remove_connection(address)
-                elif identifier == packets.connected_ping["id"]:
-                    body = handler.handle_connected_ping(frame["body"])
-                    packet = copy(packets.frame)
-                    packet["reliability"] = 0
-                    packet["body"] = body
-                    send_frame(packet, address)
-            elif connection["is_connected"]:
-                if options["debug"]:
-                    print("Received frame -> " + str(hex(identifier)))
-                options["custom_handler"](frame, address)
+                elif connection["is_connected"]:
+                    if options["debug"]:
+                        print("Received frame -> " + str(hex(identifier)))
+                    options["custom_handler"](frame, address)
     elif identifier == packets.unconnected_ping["id"]:
         server_socket.sendto(handler.handle_unconnected_ping(data), address)
     elif identifier == packets.unconnected_ping_open_connections["id"]:
