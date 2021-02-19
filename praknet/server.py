@@ -90,6 +90,7 @@ def send_queue(address):
         connection["sequence_number"] += 1
         connection["recovery_queue"][connection["queue"]["sequence_number"]] = connection["queue"]
         server_socket.sendto(packets.write_frame_set(connection["queue"]), address)
+        connection["queue"]["frames"] = []
         
 def broadcast_queue():
     for connection in connections.values():
