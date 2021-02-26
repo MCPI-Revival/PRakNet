@@ -169,10 +169,10 @@ def frame_handler(frame, address):
             packet["reliability"] = 0
             packet["body"] = body
             send_frame(packet, address, False)
-        elif connection["is_connected"]:
-            if options["debug"]:
-                print("Received frame -> " + str(hex(identifier)))
-            options["custom_handler"](frame, address)
+    elif connection["is_connected"]:
+        if options["debug"]:
+            print("Received frame -> " + str(hex(identifier)))
+        options["custom_handler"](frame, address)
     
 def packet_handler(data, address):
     identifier = data[0]
