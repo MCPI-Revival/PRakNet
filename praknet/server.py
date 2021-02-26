@@ -34,6 +34,7 @@ import os
 from praknet import packets
 import socket
 import struct
+from time import time
 
 options = {
     "name": "MCCPP;Demo;Default PRakNet motd",
@@ -164,8 +165,8 @@ def handle_open_connection_request_2(data, address):
     new_packet["client_address"] = address
     new_packet["mtu_size"] = packet["mtu_size"]
     new_packet["use_security"] = 0
-    server.add_connection(address)
-    server.get_connection(address)["mtu_size"] = packet["mtu_size"]
+    add_connection(address)
+    get_connection(address)["mtu_size"] = packet["mtu_size"]
     return packets.write_open_connection_reply_2(new_packet)
 
 def handle_connection_request(data, address):
@@ -176,7 +177,7 @@ def handle_connection_request(data, address):
     new_packet["system_addresses"] = [("255.255.255.255", 19132)] * 10
     new_packet["request_time"] = packet["request_time"]
     new_packet["time"] = int(time())
-    server.get_connection(address)["guid"] = packet["client_guid"]
+    get_connection(address)["guid"] = packet["client_guid"]
     return packets.write_connection_request_accepted(new_packet)
 
 def handle_connected_ping(data):
