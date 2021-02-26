@@ -124,7 +124,7 @@ def send_connected_ping():
     
 def send_connection_closed():
     send_reliable(bytes([packets.connection_closed["id"]]))
-    connection["state"] == 0
+    connection["state"] = 0
 
 def send_ack(sequence_numbers):
     packet = copy(packets.ack)
