@@ -29,8 +29,7 @@
 #                                                                              #
 ################################################################################
 
-__all__ = ["handler", "packets", "server"]
+__all__ = ["packets", "server"]
 
-from praknet import handler
 from praknet import packets
 from praknet import server
