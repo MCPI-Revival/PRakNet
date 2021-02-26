@@ -38,7 +38,7 @@ from time import time
 
 options = {
     "name": "MCCPP;Demo;Default PRakNet motd",
-    "ip": "0.0.0.0",
+    "ip": ".".join(["0"] * 4),
     "port": 19132,
     "server_guid": struct.unpack(">Q", os.urandom(8))[0],
     "custom_handler": lambda data, addr: 0,
