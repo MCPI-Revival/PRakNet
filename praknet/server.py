@@ -230,24 +230,32 @@ def frame_handler(frame, address):
                 print("Received frame -> " + str(hex(identifier)))
             options["custom_handler"](frame, address)
     
+def nack_handler(data, address):
+    connection = get_connection(address)
+    packet = packets.read_acknowledgement(data)
+    for sequence_number in packet["packets"]:
+        if sequence_number in connection["recovery_queue"]:
+            lost_packet = connection["recovery_queue"][sequence_number]
+            lost_packet["sequence_number"] = connection["sequence_number"]
+            connection["sequence_number"] += 1
+            server_socket.sendto(packets.write_frame_set(lost_packet), address)
+            del connection["recovery_queue"][sequence_number]
+            
+def ack_handler(data, address):
+    connection = get_connection(address)
+    packet = packets.read_acknowledgement(data)
+    for sequence_number in packet["packets"]:
+        if sequence_number in connection["recovery_queue"]:
+            del connection["recovery_queue"][sequence_number]
+    
 def packet_handler(data, address):
     identifier = data[0]
     connection = get_connection(address)
     if connection is not None:
         if identifier == packets.nack["id"]:
-            packet = packets.read_acknowledgement(data)
-            for sequence_number in packet["packets"]:
-                if sequence_number in connection["recovery_queue"]:
-                    lost_packet = connection["recovery_queue"][sequence_number]
-                    lost_packet["sequence_number"] = connection["sequence_number"]
-                    connection["sequence_number"] += 1
-                    server_socket.sendto(packets.write_frame_set(lost_packet), address)
-                    del connection["recovery_queue"][sequence_number]
+            nack_handler(data, address)
         elif identifier == packets.ack["id"]:
-            packet = packets.read_acknowledgement(data)
-            for sequence_number in packet["packets"]:
-                if sequence_number in connection["recovery_queue"]:
-                    del connection["recovery_queue"][sequence_number]
+            ack_handler(data, address)
         elif 0x80 <= identifier <= 0x8f:
             frame_set = packets.read_frame_set(data)
             if frame_set["sequence_number"] in connection["received_sequence_numbers"]:
