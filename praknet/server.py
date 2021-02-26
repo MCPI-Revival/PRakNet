@@ -67,7 +67,7 @@ def add_connection(address):
             "frames": []
         },
         "fragmented_packets": {},
-        "fragment_id: 0
+        "fragment_id": 0
     }
 
 def remove_connection(address):
