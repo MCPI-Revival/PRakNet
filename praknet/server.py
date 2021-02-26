@@ -247,6 +247,20 @@ def ack_handler(data, address):
     for sequence_number in packet["packets"]:
         if sequence_number in connection["recovery_queue"]:
             del connection["recovery_queue"][sequence_number]
+
+def frame_set_handler(data, address):
+    frame_set = packets.read_frame_set(data)
+    if frame_set["sequence_number"] not in connection["received_sequence_numbers"]:
+        connection["received_sequence_numbers"].append(frame_set["sequence_number"])
+        connection["ack_queue"].append(frame_set["sequence_number"])
+        hole_length = frame_set["sequence_number"] - connection["received_sequence_number"]
+        if hole_length > 0:
+            for sequence_number in range(connection["received_sequence_number"] + 1, hole_length):
+                if sequence_number not in connection["received_sequence_numbers"]:
+                    connection["nack_queue"].append(sequence_number)
+        connection["received_sequence_number"] = frame_set["sequence_number"]                  
+        for frame in frame_set["frames"]:
+            frame_handler(frame, address)
     
 def packet_handler(data, address):
     identifier = data[0]
@@ -257,19 +271,7 @@ def packet_handler(data, address):
         elif identifier == packets.ack["id"]:
             ack_handler(data, address)
         elif 0x80 <= identifier <= 0x8f:
-            frame_set = packets.read_frame_set(data)
-            if frame_set["sequence_number"] in connection["received_sequence_numbers"]:
-                return
-            connection["received_sequence_numbers"].append(frame_set["sequence_number"])
-            connection["ack_queue"].append(frame_set["sequence_number"])
-            hole_length = frame_set["sequence_number"] - connection["received_sequence_number"]
-            if hole_length > 0:
-                for sequence_number in range(connection["received_sequence_number"] + 1, hole_length):
-                    if sequence_number not in connection["received_sequence_numbers"]:
-                        connection["nack_queue"].append(sequence_number)
-            connection["received_sequence_number"] = frame_set["sequence_number"]                  
-            for frame in frame_set["frames"]:
-                frame_handler(frame, address)
+            frame_set_handler(data, address)
     elif identifier == packets.unconnected_ping["id"]:
         server_socket.sendto(handle_unconnected_ping(data), address)
     elif identifier == packets.unconnected_ping_open_connections["id"]:
