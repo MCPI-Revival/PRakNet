@@ -145,10 +145,34 @@ def fragmented_frame_handler(frame, address):
         for i in range(0, frame["fragment"]["size"]):
             new_frame["body"] += connection["fragmented_packets"][frame["fragment"]["id"]][i]["body"]
         del connection["fragmented_packets"][frame["fragment"]["id"]]
-        new_frame_set = copy(packets.frame_set)
-        new_frame_set["frames"] = [new_frame]
-        new_frame_set["sequence_number"] = 0
-        packet_handler(packets.write_frame_set(new_frame_set))
+        frame_handler(new_frame)
+        
+def frame_handler(frame, address):
+    connection = get_connection(address)
+    identifier = frame["body"][0]
+    if identifier < 0x80:
+        if not connection["is_connected"]:
+            if identifier == packets.connection_request["id"]:
+                body = handler.handle_connection_request(frame["body"], address)
+                packet = copy(packets.frame)
+                packet["reliability"] = 0
+                packet["body"] = body
+                send_frame(packet, address)
+            elif identifier == packets.new_connection["id"]:
+                packet = packets.read_new_connection(frame["body"])
+                connection["is_connected"] = True
+        elif identifier == packets.connection_closed["id"]:
+            remove_connection(address)
+        elif identifier == packets.connected_ping["id"]:
+            body = handler.handle_connected_ping(frame["body"])
+            packet = copy(packets.frame)
+            packet["reliability"] = 0
+            packet["body"] = body
+            send_frame(packet, address, False)
+        elif connection["is_connected"]:
+            if options["debug"]:
+                print("Received frame -> " + str(hex(identifier)))
+            options["custom_handler"](frame, address)
     
 def packet_handler(data, address):
     identifier = data[0]
@@ -183,30 +207,7 @@ def packet_handler(data, address):
             for frame in frame_set["frames"]:
                 if frame["is_fragmented"]:
                     fragmented_frame_handler(frame, address)
-                identifier = frame["body"][0]
-                if identifier < 0x80:
-                    if not connection["is_connected"]:
-                        if identifier == packets.connection_request["id"]:
-                            body = handler.handle_connection_request(frame["body"], address)
-                            packet = copy(packets.frame)
-                            packet["reliability"] = 0
-                            packet["body"] = body
-                            send_frame(packet, address)
-                        elif identifier == packets.new_connection["id"]:
-                            packet = packets.read_new_connection(frame["body"])
-                            connection["is_connected"] = True
-                    elif identifier == packets.connection_closed["id"]:
-                        remove_connection(address)
-                    elif identifier == packets.connected_ping["id"]:
-                        body = handler.handle_connected_ping(frame["body"])
-                        packet = copy(packets.frame)
-                        packet["reliability"] = 0
-                        packet["body"] = body
-                        send_frame(packet, address, False)
-                elif connection["is_connected"]:
-                    if options["debug"]:
-                        print("Received frame -> " + str(hex(identifier)))
-                    options["custom_handler"](frame, address)
+                frame_handler(frame, address)
     elif identifier == packets.unconnected_ping["id"]:
         server_socket.sendto(handler.handle_unconnected_ping(data), address)
     elif identifier == packets.unconnected_ping_open_connections["id"]:
