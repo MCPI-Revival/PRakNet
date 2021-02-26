@@ -249,6 +249,7 @@ def ack_handler(data, address):
             del connection["recovery_queue"][sequence_number]
 
 def frame_set_handler(data, address):
+    connection = get_connection(address)
     frame_set = packets.read_frame_set(data)
     if frame_set["sequence_number"] not in connection["received_sequence_numbers"]:
         connection["received_sequence_numbers"].append(frame_set["sequence_number"])
