@@ -65,7 +65,9 @@ def add_connection(address):
             "id": 0x80,
             "sequence_number": 0,
             "frames": []
-        }
+        },
+        "fragmented_packets": {},
+        "fragment_id: 0
     }
 
 def remove_connection(address):
@@ -130,6 +132,23 @@ def broadcast_acknowledgement_queues():
     for connection in connections.values():
         send_ack_queue(connection["address"])
         send_nack_queue(connection["address"])
+        
+def fragmented_frame_handler(frame, address):
+    connection = get_connection(address)
+    if frame["fragment"]["id"] not in connection["fragmented_packets"]:
+        connection["fragmented_packets"][frame["fragment"]["id"]] = {frame["fragment"]["index"]: frame}
+    else:
+        connection["fragmented_packets"][frame["fragment"]["id"]][frame["fragment"]["index"]] = frame
+    if len(connection["fragmented_packets"][frame["fragment"]["id"]]) == frame["fragment"]["size"]:
+        new_frame = copy(packets.frame)
+        new_frame["body"] = b""
+        for i in range(0, frame["fragment"]["size"]):
+            new_frame["body"] += connection["fragmented_packets"][frame["fragment"]["id"]][i]["body"]
+        del connection["fragmented_packets"][frame["fragment"]["id"]]
+        new_frame_set = copy(packets.frame_set)
+        new_frame_set["frames"] = [new_frame]
+        new_frame_set["sequence_number"] = 0
+        packet_handler(packets.write_frame_set(new_frame_set))
     
 def packet_handler(data, address):
     identifier = data[0]
@@ -162,6 +181,8 @@ def packet_handler(data, address):
                         connection["nack_queue"].append(sequence_number)
             connection["received_sequence_number"] = frame_set["sequence_number"]                  
             for frame in frame_set["frames"]:
+                if frame["is_fragmented"]:
+                    fragmented_frame_handler(frame, address)
                 identifier = frame["body"][0]
                 if identifier < 0x80:
                     if not connection["is_connected"]:
