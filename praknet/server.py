@@ -180,7 +180,7 @@ def frame_handler(frame, address):
 def packet_handler(data, address):
     identifier = data[0]
     connection = get_connection(address)
-    if connection != None:
+    if connection is not None:
         if identifier == packets.nack["id"]:
             packet = packets.read_acknowledgement(data)
             for sequence_number in packet["packets"]:
@@ -227,7 +227,7 @@ def run():
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     while True:
         recv = server_socket.recvfrom(65535)
-        if recv != None:
+        if recv is not None:
             data, address = recv
             packet_handler(data, address)
         broadcast_acknowledgement_queues()
