@@ -29,7 +29,8 @@
 #                                                                              #
 ################################################################################
 
-__all__ = ["packets", "server"]
+__all__ = ["client", "packets", "server"]
 
+from praknet import client
 from praknet import packets
 from praknet import server
