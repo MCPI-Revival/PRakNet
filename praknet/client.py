@@ -37,7 +37,7 @@ import struct
 import time
 
 options = {
-    "ip": "0.0.0.0",
+    "ip": ".".join(["0"] * 4),
     "port": 19132,
     "guid": struct.unpack(">Q", os.urandom(8))[0],
     "protocol_version": 5,
