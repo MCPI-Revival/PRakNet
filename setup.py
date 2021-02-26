@@ -29,11 +29,9 @@
 #                                                                              #
 ################################################################################
 
+import setuptools
 
-from setuptools import find_packages
-from setuptools import setup
-
-setup(
+setuptools.setup(
     name = "PRakNet",
     packages = ["praknet"],
     version = "1.1",
