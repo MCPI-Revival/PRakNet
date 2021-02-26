@@ -31,7 +31,6 @@
 
 from copy import copy
 import os
-from praknet import handler
 from praknet import packets
 import socket
 import struct
@@ -133,6 +132,59 @@ def broadcast_acknowledgement_queues():
         send_ack_queue(connection["address"])
         send_nack_queue(connection["address"])
         
+def handle_unconnected_ping(data):
+    packet = packets.read_unconnected_ping(data)
+    new_packet = copy(packets.unconnected_pong)
+    new_packet["time"] = packet["time"]
+    new_packet["server_guid"] = options["server_guid"]
+    new_packet["magic"] = packet["magic"]
+    new_packet["data"] = options["name"]
+    return packets.write_unconnected_pong(new_packet)
+
+def handle_open_connection_request_1(data):
+    packet = packets.read_open_connection_request_1(data)
+    if packet["protocol_version"] not in options["accepted_raknet_protocols"]:
+        new_packet = copy(packets.invalid_protocol_version)
+        new_packet["protocol_version"] = packet["protocol_version"]
+        new_packet["magic"] = packet["magic"]
+        new_packet["server_guid"] = options["server_guid"]
+        return packets.write_invalid_protocol_version(new_packet)
+    new_packet = copy(packets.open_connection_reply_1)
+    new_packet["magic"] = packet["magic"]
+    new_packet["server_guid"] = options["server_guid"]
+    new_packet["use_security"] = 0
+    new_packet["mtu_size"] = packet["mtu_size"]
+    return packets.write_open_connection_reply_1(new_packet)
+
+def handle_open_connection_request_2(data, address):
+    packet = packets.read_open_connection_request_2(data)
+    new_packet = copy(packets.open_connection_reply_2)
+    new_packet["magic"] = packet["magic"]
+    new_packet["server_guid"] = options["server_guid"]
+    new_packet["client_address"] = address
+    new_packet["mtu_size"] = packet["mtu_size"]
+    new_packet["use_security"] = 0
+    server.add_connection(address)
+    server.get_connection(address)["mtu_size"] = packet["mtu_size"]
+    return packets.write_open_connection_reply_2(new_packet)
+
+def handle_connection_request(data, address):
+    packet = packets.read_connection_request(data)
+    new_packet = copy(packets.connection_request_accepted)
+    new_packet["client_address"] = address
+    new_packet["system_index"] = 0
+    new_packet["system_addresses"] = [("255.255.255.255", 19132)] * 10
+    new_packet["request_time"] = packet["request_time"]
+    new_packet["time"] = int(time())
+    server.get_connection(address)["guid"] = packet["client_guid"]
+    return packets.write_connection_request_accepted(new_packet)
+
+def handle_connected_ping(data):
+    packet = packets.read_connected_ping(data)
+    new_packet = copy(packets.connected_pong)
+    new_packet["time"] = packet["time"]
+    return packets.write_connected_pong(new_packet)
+        
 def fragmented_frame_handler(frame, address):
     connection = get_connection(address)
     if frame["fragment"]["id"] not in connection["fragmented_packets"]:
@@ -156,7 +208,7 @@ def frame_handler(frame, address):
         if identifier < 0x80:
             if not connection["is_connected"]:
                 if identifier == packets.connection_request["id"]:
-                    body = handler.handle_connection_request(frame["body"], address)
+                    body = handle_connection_request(frame["body"], address)
                     packet = copy(packets.frame)
                     packet["reliability"] = 0
                     packet["body"] = body
@@ -167,7 +219,7 @@ def frame_handler(frame, address):
             elif identifier == packets.connection_closed["id"]:
                 remove_connection(address)
             elif identifier == packets.connected_ping["id"]:
-                body = handler.handle_connected_ping(frame["body"])
+                body = handle_connected_ping(frame["body"])
                 packet = copy(packets.frame)
                 packet["reliability"] = 0
                 packet["body"] = body
@@ -210,13 +262,13 @@ def packet_handler(data, address):
             for frame in frame_set["frames"]:
                 frame_handler(frame, address)
     elif identifier == packets.unconnected_ping["id"]:
-        server_socket.sendto(handler.handle_unconnected_ping(data), address)
+        server_socket.sendto(handle_unconnected_ping(data), address)
     elif identifier == packets.unconnected_ping_open_connections["id"]:
-        server_socket.sendto(handler.handle_unconnected_ping(data), address)
+        server_socket.sendto(handle_unconnected_ping(data), address)
     elif identifier == packets.open_connection_request_1["id"]:
-        server_socket.sendto(handler.handle_open_connection_request_1(data), address)
+        server_socket.sendto(handle_open_connection_request_1(data), address)
     elif identifier == packets.open_connection_request_2["id"]:
-        server_socket.sendto(handler.handle_open_connection_request_2(data, address), address)
+        server_socket.sendto(handle_open_connection_request_2(data, address), address)
 
 def run():
     try:
