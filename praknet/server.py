@@ -116,17 +116,19 @@ def broadcast_frame(packet, is_imediate = True):
         
 def send_ack_queue(address):
     connection = get_connection(address)
-    packet = copy(packets.ack)
-    packet["packets"] = connection["ack_queue"]
-    server_socket.sendto(packets.write_acknowledgement(packet), address)
-    connection["ack_queue"] = []
+    if len(connection["ack_queue"]) > 0:
+        packet = copy(packets.ack)
+        packet["packets"] = connection["ack_queue"]
+        server_socket.sendto(packets.write_acknowledgement(packet), address)
+        connection["ack_queue"] = []
     
 def send_nack_queue(address):
     connection = get_connection(address)
-    packet = copy(packets.nack)
-    packet["packets"] = connection["nack_queue"]
-    server_socket.sendto(packets.write_acknowledgement(packet), address)
-    connection["nack_queue"] = []
+    if len(connection["ack_queue"]) > 0:
+        packet = copy(packets.nack)
+        packet["packets"] = connection["nack_queue"]
+        server_socket.sendto(packets.write_acknowledgement(packet), address)
+        connection["nack_queue"] = []
     
 def broadcast_acknowledgement_queues():
     for connection in connections.values():
