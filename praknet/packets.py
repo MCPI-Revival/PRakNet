@@ -421,19 +421,40 @@ def read_acknowledgement(data):
     return packet
 
 def write_acknowledgement(packet):
-    data = b""
+    data = bytes([packet["id"]])
+    records = 0
     packet["packets"].sort()
-    count = 0
-    for i in range(0, len(packet["packets"]), 2):
-        if len(packet["packets"][i:]) > 1:
-            data += b"\x00"
-            data += struct.pack("<L", packet["packets"][i])[0:-1]
-            data += struct.pack("<L", packet["packets"][i + 1])[0:-1]
-        else:
+    if len(packet["packets"]) > 0:
+        pointer = 1
+        start_index = packet["packets"][0]
+        end_index = packet["packets"][0]
+        while pointer < len(packet["packets"]):
+            index = packet["packets"][pointer]
+            pointer += 1
+            diff = index - end_index
+            if diff == 1:
+                end_index = index
+            elif diff > 1:
+                if start_index == end_index:
+                    data += b"\x01"
+                    data += struct.pack("<L", start_index)[0:-1]
+                    start_index = end_index = index
+                else:
+                    data += b"\x00"
+                    data += struct.pack("<L", start_index)[0:-1]
+                    data += struct.pack("<L", end_index)[0:-1]
+                    start_index = end_index = index
+                records += 1
+        if start_index == end_index:
             data += b"\x01"
-            data += struct.pack("<L", packet["packets"][0])[0:-1]
-        count += 1
-    return bytes([packet["id"]]) + struct.pack(">H", count) + data
+            data += struct.pack("<L", start_index)[0:-1]
+        else:
+            data += b"\x00"
+            data += struct.pack("<L", start_index)[0:-1]
+            data += struct.pack("<L", end_index)[0:-1]
+        records += 1
+    data = data[0:1] + struct.pack(">H", records) + data[1:]
+    return data
 
 def read_frame(data):
     packet = {
