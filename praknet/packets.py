@@ -404,20 +404,13 @@ def read_acknowledgement(data):
         is_single = data[offset] > 0
         offset += 1
         if not is_single:
-            start_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+            packet["packets"].append(struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0])
             offset += 3
-            end_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+            packet["packets"].append(struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0])
             offset += 3
-            index = start_index
-            while index <= end_index:
-                packet["packets"].append(index)
-                if len(packet["packets"]) > 4096:
-                    raise Exception("Max acknowledgement packet count exceed")
-                index += 1
         else:
-            index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
+            packet["packets"].append(struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0])
             offset += 3
-            packet["packets"].append(index)
     return packet
 
 def write_acknowledgement(packet):
