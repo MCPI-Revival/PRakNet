@@ -431,7 +431,7 @@ def write_acknowledgement(packet):
             data += struct.pack("<L", packet["packets"][i + 1])[0:-1]
         else:
             data += b"\x01"
-            data += struct.pack("<L", packet["packets"][0])[0:-1]
+            data += struct.pack("<L", packet["packets"][i])[0:-1]
         count += 1
     return bytes([packet["id"]]) + struct.pack(">H", count) + data
 
