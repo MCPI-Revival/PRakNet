@@ -142,7 +142,7 @@ def broadcast_acknowledgement_queues():
 def handle_unconnected_ping(data):
     packet = packets.read_unconnected_ping(data)
     new_packet = {
-        "id": packets.id_unconnected_ping
+        "id": packets.id_unconnected_ping,
         "time": packet["time"],
         "server_guid": options["server_guid"],
         "magic": packet["magic"],
@@ -153,26 +153,32 @@ def handle_unconnected_ping(data):
 def handle_open_connection_request_1(data):
     packet = packets.read_open_connection_request_1(data)
     if packet["protocol_version"] not in options["accepted_raknet_protocols"]:
-        new_packet = copy(packets.invalid_protocol_version)
-        new_packet["protocol_version"] = packet["protocol_version"]
-        new_packet["magic"] = packet["magic"]
-        new_packet["server_guid"] = options["server_guid"]
+        new_packet = {
+            "id": packets.id_invalid_protocol_version,
+            "protocol_version": packet["protocol_version"],
+            "magic": packet["magic"],
+            "server_guid": options["server_guid"]
+        }
         return packets.write_invalid_protocol_version(new_packet)
-    new_packet = copy(packets.open_connection_reply_1)
-    new_packet["magic"] = packet["magic"]
-    new_packet["server_guid"] = options["server_guid"]
-    new_packet["use_security"] = 0
-    new_packet["mtu_size"] = packet["mtu_size"]
+    new_packet = {
+        "id": packets.id_open_connection_reply_1,
+        "magic": packet["magic"],
+        "server_guid": options["server_guid"],
+        "use_security": 0,
+        "mtu_size": packet["mtu_size"]
+    }
     return packets.write_open_connection_reply_1(new_packet)
 
 def handle_open_connection_request_2(data, address):
     packet = packets.read_open_connection_request_2(data)
-    new_packet = copy(packets.open_connection_reply_2)
-    new_packet["magic"] = packet["magic"]
-    new_packet["server_guid"] = options["server_guid"]
-    new_packet["client_address"] = address
-    new_packet["mtu_size"] = packet["mtu_size"]
-    new_packet["use_security"] = 0
+    new_packet = {
+        "id": packets.id_open_connection_reply_2,
+        "magic": packet["magic"],
+        "server_guid": options["server_guid"],
+        "client_address": address
+        "mtu_size": packet["mtu_size"],
+        "use_security": 0
+    }
     add_connection(address)
     get_connection(address)["mtu_size"] = packet["mtu_size"]
     return packets.write_open_connection_reply_2(new_packet)
