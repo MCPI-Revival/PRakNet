@@ -142,7 +142,7 @@ def broadcast_acknowledgement_queues():
 def handle_unconnected_ping(data):
     packet = packets.read_unconnected_ping(data)
     new_packet = {
-        "id": packets.id_unconnected_ping,
+        "id": packets.id_unconnected_pong,
         "time": packet["time"],
         "server_guid": options["server_guid"],
         "magic": packet["magic"],
@@ -185,12 +185,14 @@ def handle_open_connection_request_2(data, address):
 
 def handle_connection_request(data, address):
     packet = packets.read_connection_request(data)
-    new_packet = copy(packets.connection_request_accepted)
-    new_packet["client_address"] = address
-    new_packet["system_index"] = 0
-    new_packet["system_addresses"] = [("255.255.255.255", 19132)] * 10
-    new_packet["request_time"] = packet["request_time"]
-    new_packet["time"] = int(time())
+    new_packet = {
+        "id": packets.id_connection_request_accepted,
+        "client_address": address,
+        "system_index": 0,
+        "system_addresses": [("255.255.255.255", 19132)] * 10,
+        "request_time": packet["request_time"],
+        "time": int(time())
+    }
     get_connection(address)["guid"] = packet["client_guid"]
     return packets.write_connection_request_accepted(new_packet)
 
