@@ -200,7 +200,7 @@ def handle_connection_request(data, address):
 def handle_connected_ping(data):
     packet = packets.read_connected_ping(data)
     new_packet = {
-        "id": packet.id_connected_pong,
+        "id": packets.id_connected_pong,
         "time": packet["time"]
     }
     return packets.write_connected_pong(new_packet)
