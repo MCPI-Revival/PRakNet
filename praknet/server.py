@@ -72,7 +72,7 @@ def add_connection(address):
 def remove_connection(address):
     token = str(address[0]) + ":" + str(address[1])
     if token in connections:
-        body = bytes([packets.connection_closed["id"]])
+        body = bytes([packets.id_connection_closed])
         packet = {
             "reliability": 0,
             "is_fragmented": False,
