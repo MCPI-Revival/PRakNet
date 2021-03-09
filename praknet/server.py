@@ -29,7 +29,6 @@
 #                                                                              #
 ################################################################################
 
-from copy import copy
 import os
 from praknet import packets
 import socket
@@ -74,9 +73,10 @@ def remove_connection(address):
     token = str(address[0]) + ":" + str(address[1])
     if token in connections:
         body = bytes([packets.connection_closed["id"]])
-        packet = copy(packets.frame)
-        packet["reliability"] = 0
-        packet["body"] = body
+        packet = {
+            "reliability": 0,
+            "body": body
+        }
         send_frame(packet, address)
         del connections[token]
 
@@ -117,16 +117,20 @@ def broadcast_frame(packet, is_imediate = True):
 def send_ack_queue(address):
     connection = get_connection(address)
     if len(connection["ack_queue"]) > 0:
-        packet = copy(packets.ack)
-        packet["packets"] = connection["ack_queue"]
+        packet = {
+            "id": packets.id_ack,
+            "packets": connection["ack_queue"]
+        }
         server_socket.sendto(packets.write_acknowledgement(packet), address)
         connection["ack_queue"] = []
     
 def send_nack_queue(address):
     connection = get_connection(address)
     if len(connection["ack_queue"]) > 0:
-        packet = copy(packets.nack)
-        packet["packets"] = connection["nack_queue"]
+        packet = {
+            "id": packets.id_nack,
+            "packets": connection["nack_queue"]
+        }
         server_socket.sendto(packets.write_acknowledgement(packet), address)
         connection["nack_queue"] = []
     
@@ -137,11 +141,13 @@ def broadcast_acknowledgement_queues():
         
 def handle_unconnected_ping(data):
     packet = packets.read_unconnected_ping(data)
-    new_packet = copy(packets.unconnected_pong)
-    new_packet["time"] = packet["time"]
-    new_packet["server_guid"] = options["server_guid"]
-    new_packet["magic"] = packet["magic"]
-    new_packet["data"] = options["name"]
+    new_packet = {
+        "id": packets.id_unconnected_ping
+        "time": packet["time"],
+        "server_guid": options["server_guid"],
+        "magic": packet["magic"],
+        "data": options["name"]
+    }
     return packets.write_unconnected_pong(new_packet)
 
 def handle_open_connection_request_1(data):
