@@ -269,19 +269,19 @@ def packet_handler(data, address):
     identifier = data[0]
     connection = get_connection(address)
     if connection is not None:
-        if identifier == packets.nack["id"]:
+        if identifier == packets.id_nack:
             nack_handler(data, address)
-        elif identifier == packets.ack["id"]:
+        elif identifier == packets.id_ack:
             ack_handler(data, address)
         elif 0x80 <= identifier <= 0x8f:
             frame_set_handler(data, address)
-    elif identifier == packets.unconnected_ping["id"]:
+    elif identifier == packets.id_unconnected_ping:
         server_socket.sendto(handle_unconnected_ping(data), address)
-    elif identifier == packets.unconnected_ping_open_connections["id"]:
+    elif identifier == packets.id_unconnected_ping_open_connections:
         server_socket.sendto(handle_unconnected_ping(data), address)
-    elif identifier == packets.open_connection_request_1["id"]:
+    elif identifier == packets.id_open_connection_request_1:
         server_socket.sendto(handle_open_connection_request_1(data), address)
-    elif identifier == packets.open_connection_request_2["id"]:
+    elif identifier == packets.id_open_connection_request_2:
         server_socket.sendto(handle_open_connection_request_2(data, address), address)
 
 def run():
