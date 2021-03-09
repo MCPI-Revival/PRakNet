@@ -31,145 +31,26 @@
 
 import struct
 
-# Packet templates
+# Packet ids
 
-connected_ping = {
-    "id": 0x00,
-    "time": None
-}
-
-unconnected_ping = {
-    "id": 0x01,
-    "time": None,
-    "magic": None
-}
-
-unconnected_ping_open_connections = {
-    "id": 0x02,
-    "time": None,
-    "magic": None
-}
-
-connected_pong = {
-    "id": 0x03,
-    "time": None
-}
-
-open_connection_request_1 = {
-    "id": 0x05,
-    "magic": None,
-    "protocol_version": None,
-    "mtu_size": None
-}
-
-open_connection_reply_1 = {
-    "id": 0x06,
-    "magic": None,
-    "server_guid": None,
-    "use_security": None,
-    "mtu_size": None
-}
-
-open_connection_request_2 = {
-    "id": 0x07,
-    "magic": None,
-    "server_address": None,
-    "mtu_size": None,
-    "client_guid": None
-}
-
-open_connection_reply_2 = {
-    "id": 0x08,
-    "magic": None,
-    "server_guid": None,
-    "client_address": None,
-    "mtu_size": None,
-    "use_security": None
-}
-
-connection_request = {
-    "id": 0x09,
-    "client_guid": None,
-    "request_time": None,
-    "use_security": None
-}
-
-connection_request_accepted = {
-    "id": 0x10,
-    "client_address": None,
-    "system_index": None,
-    "system_addresses": [],
-    "request_time": None,
-    "time": None
-}
-
-new_connection = {
-    "id": 0x13,
-    "address": None,
-    "system_addresses": [],
-    "ping_time": None,
-    "pong_time": None
-}
-
-connection_closed = {
-    "id": 0x15
-}
-
-invalid_protocol_version = {
-    "id": 0x1a,
-    "protocol_version": None,
-    "magic": None,
-    "server_guid": None
-}
-
-unconnected_pong = {
-    "id": 0x1c,
-    "time": None,
-    "server_guid": None,
-    "magic": None,
-    "data": None
-}
-
-advertise_system = {
-    "id": 0x1d,
-    "time": None,
-    "server_guid": None,
-    "magic": None,
-    "data": None
-}
-
-nack = {
-    "id": 0xa0,
-    "packets": [],
-}
-
-ack = {
-    "id": 0xc0,
-    "packets": []
-}
-
-frame_set = {
-    "id": 0x80,
-    "sequence_number": None,
-    "frames": []
-}
-
-frame = {
-    "reliability": None,
-    "is_fragmented": None,
-    "reliable_index": None,
-    "sequence_index": None,
-    "order": {
-        "index": None,
-        "channel": None
-    },
-    "fragment": {
-        "size": None,
-        "id": None,
-        "index": None
-    },
-    "body": None
-}
+id_connected_ping = 0x00
+id_unconnected_ping = 0x01
+id_unconnected_ping_open_connections = 0x02
+id_connected_pong = 0x03
+id_open_connection_request_1 = 0x05
+id_open_connection_reply_1 = 0x06
+id_open_connection_request_2 = 0x07
+id_open_connection_reply_2 = 0x08
+id_connection_request = 0x09
+id_connection_request_accepted = 0x10
+id_new_connection = 0x13
+id_connection_closed = 0x15
+id_invalid_protocol_version = 0x1a
+id_unconnected_pong = 0x1c
+id_advertise_system = 0x1d,
+id_nack = 0xa0
+id_ack = 0xc0
+id_frame_set = 0x80
 
 # Just to speed up the development
 
