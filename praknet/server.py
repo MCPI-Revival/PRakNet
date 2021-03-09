@@ -176,7 +176,7 @@ def handle_open_connection_request_2(data, address):
         "id": packets.id_open_connection_reply_2,
         "magic": packet["magic"],
         "server_guid": options["server_guid"],
-        "client_address": address
+        "client_address": address,
         "mtu_size": packet["mtu_size"],
         "use_security": 0
     }
