@@ -75,6 +75,7 @@ def remove_connection(address):
         body = bytes([packets.connection_closed["id"]])
         packet = {
             "reliability": 0,
+            "is_fragmented": False,
             "body": body
         }
         send_frame(packet, address)
@@ -198,8 +199,10 @@ def handle_connection_request(data, address):
 
 def handle_connected_ping(data):
     packet = packets.read_connected_ping(data)
-    new_packet = copy(packets.connected_pong)
-    new_packet["time"] = packet["time"]
+    new_packet = {
+        "id": packet.id_connected_pong,
+        "time": packet["time"]
+    }
     return packets.write_connected_pong(new_packet)
         
 def fragmented_frame_handler(frame, address):
@@ -209,8 +212,9 @@ def fragmented_frame_handler(frame, address):
     else:
         connection["fragmented_packets"][frame["fragment"]["id"]][frame["fragment"]["index"]] = frame
     if len(connection["fragmented_packets"][frame["fragment"]["id"]]) == frame["fragment"]["size"]:
-        new_frame = copy(packets.frame)
-        new_frame["body"] = b""
+        new_frame = {
+            "body": b""
+        }
         for i in range(0, frame["fragment"]["size"]):
             new_frame["body"] += connection["fragmented_packets"][frame["fragment"]["id"]][i]["body"]
         del connection["fragmented_packets"][frame["fragment"]["id"]]
@@ -226,9 +230,11 @@ def frame_handler(frame, address):
             if not connection["is_connected"]:
                 if identifier == packets.connection_request["id"]:
                     body = handle_connection_request(frame["body"], address)
-                    packet = copy(packets.frame)
-                    packet["reliability"] = 0
-                    packet["body"] = body
+                    packet = {
+                        "reliability": 0,
+                        "is_fragmented": False,
+                        "body": body
+                    }
                     send_frame(packet, address)
                 elif identifier == packets.new_connection["id"]:
                     packet = packets.read_new_connection(frame["body"])
@@ -237,9 +243,11 @@ def frame_handler(frame, address):
                 remove_connection(address)
             elif identifier == packets.connected_ping["id"]:
                 body = handle_connected_ping(frame["body"])
-                packet = copy(packets.frame)
-                packet["reliability"] = 0
-                packet["body"] = body
+                packet = {
+                    "reliability": 0,
+                    "is_fragmented": False,
+                    "body": body
+                }
                 send_frame(packet, address, False)
         elif connection["is_connected"]:
             if options["debug"]:
