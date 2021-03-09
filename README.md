@@ -16,7 +16,6 @@ Usage:
 server ->
 
 ```
-from copy import copy
 from praknet import packets
 from praknet import server
 import struct
@@ -36,9 +35,11 @@ def custom_handler(packet, address):
         length = struct.unpack(">H", packet["body"][1:1 + 2])[0]
         connection["username"] = packet["body"][3:3 + length].decode()
         new_packet = b"\x83\x00\x00\x00\x00"
-        send_packet = copy(packets.frame)
-        send_packet["reliability"] = 0
-        send_packet["body"] = new_packet
+        send_packet = {
+            "reliability": 0,
+            "is_fragmented": False,
+            "body": new_packet
+        }
         server.send_frame(send_packet, address)
         server.options["entities"] += 1
         connection["entity_id"] = server.options["entities"]
@@ -46,9 +47,11 @@ def custom_handler(packet, address):
         connection["pos"] = [0, 4, 0]
         connection["yaw"] = 0
         connection["pitch"] = 0
-        send_packet = copy(packets.frame)
-        send_packet["reliability"] = 0
-        send_packet["body"] = new_packet
+        send_packet = {
+            "reliability": 0,
+            "is_fragmented": False,
+            "body": new_packet
+        }
         server.send_frame(send_packet, address)
     elif identifier == 0x94:
         connection["pos"] = decode_pos(packet["body"][5:5 + 12])
@@ -66,16 +69,20 @@ def custom_handler(packet, address):
             message += " PITCH: "
             message += str(connection["pitch"])
             new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
-            send_packet = copy(packets.frame)
-            send_packet["reliability"] = 0
-            send_packet["body"] = new_packet
+            send_packet = {
+                "reliability": 0,
+                "is_fragmented": False,
+                "body": new_packet
+            }
             server.send_frame(send_packet, address)
     elif identifier == 0x84:
         message = connection["username"] + " joined the game."
         new_packet = b"\x85" + struct.pack(">H", len(message)) + message.encode()
-        send_packet = copy(packets.frame)
-        send_packet["reliability"] = 0
-        send_packet["body"] = new_packet
+        send_packet = {
+            "reliability": 0,
+            "is_fragmented": False,
+            "body": new_packet
+        }
         server.broadcast_frame(send_packet)
         print(message)
 
