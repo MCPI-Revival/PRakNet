@@ -228,7 +228,7 @@ def frame_handler(frame, address):
         identifier = frame["body"][0]
         if identifier < 0x80:
             if not connection["is_connected"]:
-                if identifier == packets.connection_request["id"]:
+                if identifier == packets.id_connection_request:
                     body = handle_connection_request(frame["body"], address)
                     packet = {
                         "reliability": 0,
@@ -236,12 +236,12 @@ def frame_handler(frame, address):
                         "body": body
                     }
                     send_frame(packet, address)
-                elif identifier == packets.new_connection["id"]:
+                elif identifier == packets.id_new_connection:
                     packet = packets.read_new_connection(frame["body"])
                     connection["is_connected"] = True
-            elif identifier == packets.connection_closed["id"]:
+            elif identifier == packets.id_connection_closed:
                 remove_connection(address)
-            elif identifier == packets.connected_ping["id"]:
+            elif identifier == packets.id_connected_ping:
                 body = handle_connected_ping(frame["body"])
                 packet = {
                     "reliability": 0,
