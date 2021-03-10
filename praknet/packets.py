@@ -82,7 +82,7 @@ def read_var_int(data):
         byte = data[pos]
         pos += 1
         result |= ((byte & 0x7f) << i)
-        if (b & 0x80) == 0:
+        if (byte & 0x80) == 0:
             return result
     raise Exception("VarInt is too big")
     
@@ -95,7 +95,7 @@ def read_var_long(data):
         byte = data[pos]
         pos += 1
         result |= ((byte & 0x7f) << i)
-        if (b & 0x80) == 0:
+        if (byte & 0x80) == 0:
             return result
     raise Exception("VarLong is too big")
 
