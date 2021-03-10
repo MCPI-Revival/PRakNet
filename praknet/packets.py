@@ -98,6 +98,14 @@ def read_var_long(data):
         if (byte & 0x80) == 0:
             return result
     raise Exception("VarLong is too big")
+    
+def read_signed_var_int(data):
+    raw = read_var_int(data)
+    return -(raw >> 1) - 1 if (raw & 1) else raw >> 1
+
+def read_signed_var_long(data):
+    raw = read_var_long(data)
+    return -(raw >> 1) - 1 if (raw & 1) else raw >> 1
 
 # Decode and Encode Packets
 
