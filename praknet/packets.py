@@ -52,7 +52,7 @@ id_nack = 0xa0
 id_ack = 0xc0
 id_frame_set = 0x80
 
-# Just to speed up the development
+# Utils
 
 def read_address(data):
     address = ".".join([
@@ -72,6 +72,32 @@ def write_address(address):
         data += bytes([~int(part) & 0xff])
     data += struct.pack(">H", address[1])
     return data
+
+def read_var_int(data):
+    result = 0
+    pos = 0
+    for i in range(0, 35, 7):
+        if len(data) <= pos:
+            raise Exception("Data position exceeded")
+        byte = data[pos]
+        pos += 1
+        result |= ((byte & 0x7f) << i)
+        if (b & 0x80) == 0:
+            return result
+    raise Exception("VarInt is too big")
+    
+def read_var_long(data):
+    result = 0
+    pos = 0
+    for i in range(0, 70, 7):
+        if len(data) <= pos:
+            raise Exception("Data position exceeded")
+        byte = data[pos]
+        pos += 1
+        result |= ((byte & 0x7f) << i)
+        if (b & 0x80) == 0:
+            return result
+    raise Exception("VarLong is too big")
 
 # Decode and Encode Packets
 
