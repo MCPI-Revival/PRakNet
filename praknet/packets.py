@@ -285,10 +285,13 @@ def read_acknowledgement(data):
         is_single = data[offset] > 0
         offset += 1
         if not is_single:
-            packet["packets"].append(struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0])
+            current_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
             offset += 3
-            packet["packets"].append(struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0])
+            end_index = struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0]
             offset += 3
+            while current_index <= end_index:
+                packet["packets"].append(current_index)   
+                current_index += 1
         else:
             packet["packets"].append(struct.unpack('<L', data[offset:offset + 3] + b'\x00')[0])
             offset += 3
