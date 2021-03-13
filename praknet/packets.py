@@ -197,12 +197,12 @@ def read_connection_request_accepted(data):
     packet = {
         "id": data[0],
         "client_address": read_address(data[1:1 + 7]),
-        "system_index": data[8],
+        "system_index": struct.unpack(">H", data[8:8 + 2])[0],
         "system_addresses": [],
         "request_time": struct.unpack(">Q", data[79:79 + 8])[0],
         "time": struct.unpack(">Q", data[87:87 + 8])[0]
     }
-    offset = 9
+    offset = 10
     for i in range(0, 10):
         packet["system_addresses"].append(read_address(data[offset:offset + 7]))
         offset += 7
@@ -211,7 +211,7 @@ def read_connection_request_accepted(data):
 def write_connection_request_accepted(packet):
     data = bytes([packet["id"]])
     data += write_address(packet["client_address"])
-    data += bytes([packet["system_index"]])
+    data += struct.pack(">H", packet["system_index"])
     for i in range(0, 10):
         data += write_address(packet["system_addresses"][i])
     data += struct.pack(">Q", packet["request_time"])
