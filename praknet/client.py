@@ -65,19 +65,22 @@ def send_packet(data):
     client_socket.sendto(data, (options["ip"], options["port"]))
 
 def send_frame(packet):
-    new_packet = copy(packets.frame_set)
-    new_packet["sequence_number"] = connection["sequence_number"]
-    new_packet["frames"] = [packet]
+    new_packet = {
+        "sequence_number": connection["sequence_number"],
+        "frames": [packet]
+    }
     send_packet(packets.write_frame_set(new_packet))
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1
     
 def send_reliable(data):
-    packet = copy(packets.frame)
-    packet["reliability"] = 2
-    packet["reliable_index"] = connection["reliable_index"]
+    packet = {
+        "reliability": 2,
+        "reliable_index": connection["reliable_index"],
+        "is_fragmented": False,
+        "body": data
+    }
     connection["reliable_index"] += 1
-    packet["body"] = data
     send_frame(packet)
     
 def send_unconnected_ping():
