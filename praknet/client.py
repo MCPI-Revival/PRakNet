@@ -84,54 +84,68 @@ def send_reliable(data):
     send_frame(packet)
     
 def send_unconnected_ping():
-    packet = copy(packets.unconnected_ping_open_connections)
-    packet["time"] = int(time.time())
-    packet["magic"] = options["magic"]
+    packet = {
+        "id": packets.id_unconnected_ping_open_connections,
+        "time": int(time.time()),
+        "magic": options["magic"]
+    }
     send_packet(packets.write_unconnected_ping(packet))
     
 def send_open_connection_request_1():
-    packet = copy(packets.open_connection_request_1)
-    packet["magic"] = options["magic"]
-    packet["protocol_version"] = options["protocol_version"]
-    packet["mtu_size"] = options["mtu_size"]
+    packet = {
+        "id": packets.id_open_connection_request_1,
+        "magic": options["magic"],
+        "protocol_version": options["protocol_version"],
+        "mtu_size": options["mtu_size"]
+    }
     send_packet(packets.write_open_connection_request_1(packet))
     
 def send_open_connection_request_2():
-    packet = copy(packets.open_connection_request_2)
-    packet["magic"] = options["magic"]
-    packet["server_address"] = (options["ip"], options["port"])
-    packet["mtu_size"] = options["mtu_size"]
-    packet["client_guid"] = options["guid"]
+    packet = {
+        "id": packets.id_open_connection_request_2,
+        "magic": options["magic"],
+        "server_address": (options["ip"], options["port"]),
+        "mtu_size": options["mtu_size"],
+        "client_guid": options["guid"]
+    }
     send_packet(packets.write_open_connection_request_2(packet))
     
 def send_connection_request():
-    packet = copy(packets.connection_request)
-    packet["client_guid"] = options["guid"]
-    packet["request_time"] = int(time.time())
-    packet["use_security"] = 0
+    packet = {
+        "id": packets.id_connection_request,
+        "client_guid": options["guid"],
+        "request_time": int(time.time()),
+        "use_security": 0
+    }
     send_reliable(packets.write_connection_request(packet))
     
 def send_new_connection(ping_time):
-    packet = copy(packets.new_connection)
-    packet["address"] = (options["ip"], options["port"])
-    packet["system_addresses"] = [("255.255.255.0", 19132)] * 10
-    packet["ping_time"] = int(ping_time)
-    packet["pong_time"] = int(time.time())
+    packet = {
+        "id": packets.id_new_connection,
+        "address": (options["ip"], options["port"]),
+        "system_addresses": [("255.255.255.0", 19132)] * 10,
+        "ping_time": int(ping_time),
+        "pong_time": int(time.time())
+    }
     send_reliable(packets.write_new_connection(packet))
     connection["state"] = 2
     
 def send_connected_ping():
-    packet = copy(packets.connected_ping)
-    packet["time"] = int(time.time())
+    packet = {
+        "id": packets.id_connected_ping,
+        "time": int(time.time())
+    }
     send_reliable(packets.write_connected_ping(packet))
     
 def send_connection_closed():
-    send_reliable(bytes([packets.connection_closed["id"]]))
+    send_reliable(bytes([packets.id_connection_closed]))
     connection["state"] = 0
 
 def send_ack(sequence_numbers):
-    packet = copy(packets.ack)
-    packet["packets"] = sequence_numbers
+    packet {
+        "id": packets.id_ack,
+        "packets": sequence_numbers
+    }
     send_packet(packets.write_acknowledgement(packet))
 
 def packet_handler():
@@ -140,19 +154,19 @@ def packet_handler():
         if connection["state"] == 0:
             send_unconnected_ping()
             recv = client_socket.recvfrom(65535)
-            if recv[0][0] == packets.unconnected_pong["id"]:
+            if recv[0][0] == packets.id_unconnected_pong:
                 packet = packets.read_unconnected_pong(recv[0])
                 connection["server_name"] = packet["data"]
         elif connection["state"] == 1:
             if step == 0:
                 send_open_connection_request_1()
                 recv = client_socket.recvfrom(65535)
-                if recv[0][0] == packets.open_connection_reply_1["id"]:
+                if recv[0][0] == packets.id_open_connection_reply_1:
                     step = 1
             elif step == 1:
                 send_open_connection_request_2()
                 recv = client_socket.recvfrom(65535)
-                if recv[0][0] == packets.open_connection_reply_2["id"]:
+                if recv[0][0] == packets.id_open_connection_reply_2:
                     step = 2
             elif step == 2:
                 send_connection_request()
@@ -161,7 +175,7 @@ def packet_handler():
                     frame_set = packets.read_frame_set(recv[0])
                     send_ack([frame_set["sequence_number"]])
                     for frame in frame_set["frames"]:
-                        if frame["body"][0] == packets.connection_request_accepted["id"]:
+                        if frame["body"][0] == packets.id_connection_request_accepted:
                             packet = packets.read_connection_request_accepted(frame["body"])
                             send_new_connection(packet["time"])
                             step = 0
@@ -171,9 +185,9 @@ def packet_handler():
                 frame_set = packets.read_frame_set(recv[0])
                 send_ack([frame_set["sequence_number"]])
                 for frame in frame_set["frames"]:
-                    if frame["body"][0] == packets.connection_closed["id"]:
+                    if frame["body"][0] == packets.id_connection_closed:
                         connection["state"] = 0
-                    elif frame["body"][0] == packets.connected_pong["id"]:
+                    elif frame["body"][0] == packets.id_connected_pong:
                         pass
                     else:
                         if options["debug"]:
