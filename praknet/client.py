@@ -142,7 +142,7 @@ def send_connection_closed():
     connection["state"] = 0
 
 def send_ack(sequence_numbers):
-    packet {
+    packet = {
         "id": packets.id_ack,
         "packets": sequence_numbers
     }
