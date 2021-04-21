@@ -106,9 +106,6 @@ def handle(frame):
         client.send_reliable(b"\x84\x01")
         print(packet["body"])
         client.send_reliable(b'\x94\x00\x00\x00\x01C\x00\x00\x00B\x88\x00\x00C\x00&\xca\x00\x00\x00\x00\x00\x00\x00\x00')
-        print("start game;")
-    elif frame["body"][0] == 0x89:
-        print(frame["body"])
 
 client.options["custom_handler"] = handle
 
