@@ -66,6 +66,7 @@ def send_packet(data):
 
 def send_frame(packet):
     new_packet = {
+        "id": 0x80,
         "sequence_number": connection["sequence_number"],
         "frames": [packet]
     }
