@@ -102,8 +102,8 @@ client.options["port"] = 19132
 
 def handle(frame):
     if frame["body"][0] == 0x87:
-        client.send_reliable(b"\x84\x01")
-        client.send_reliable(b'\x94\x00\x00\x00\x01C\x00\x00\x00B\x88\x00\x00C\x00&\xca\x00\x00\x00\x00\x00\x00\x00\x00')
+        client.send_unreliable(b"\x84\x01")
+        client.send_unreliable(b'\x94\x00\x00\x00\x01C\x00\x00\x00B\x88\x00\x00C\x00&\xca\x00\x00\x00\x00\x00\x00\x00\x00')
 
 client.options["custom_handler"] = handle
 
@@ -118,6 +118,6 @@ login = False
 while True:
     if client.connection["state"] == 2:
         if login == False:
-            client.send_reliable(b"\x82\x00\x07PRakNet\x00\x00\x00\t\x00\x00\x00\t")
+            client.send_unreliable(b"\x82\x00\x07PRakNet\x00\x00\x00\t\x00\x00\x00\t")
             login = True
 ```
