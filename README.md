@@ -90,3 +90,39 @@ server.options["custom_handler"] = custom_handler
 server.options["name"] = "MCCPP;MINECON;PRakNet Test MCPI Server"
 server.run()
 ```
+
+client ->
+
+```
+from praknet import client
+import threading
+
+client.options["deb ug"] = True
+client.options["ip"] = "0.0.0.0"
+client.options["port"] = 19132
+
+def handle(frame):
+    if frame["body"][0] == 0x87:
+        client.send_reliable(b"\x84\x01")
+        print(packet["body"])
+        client.send_reliable(b'\x94\x00\x00\x00\x01C\x00\x00\x00B\x88\x00\x00C\x00&\xca\x00\x00\x00\x00\x00\x00\x00\x00')
+        print("start game;")
+    elif frame["body"][0] == 0x89:
+        print(frame["body"])
+
+client.options["custom_handler"] = handle
+
+client.connection["state"] = 1
+
+thread = threading.Thread(target = client.packet_handler, args = [])
+thread.setDaemon(True)
+thread.start()
+
+login = False
+
+while True:
+    if client.connection["state"] == 2:
+        if login == False:
+            client.send_reliable(b"\x82\x00\x07PRakNet\x00\x00\x00\t\x00\x00\x00\t")
+            login = True
+```
