@@ -97,14 +97,12 @@ client ->
 from praknet import client
 import threading
 
-client.options["deb ug"] = True
 client.options["ip"] = "0.0.0.0"
 client.options["port"] = 19132
 
 def handle(frame):
     if frame["body"][0] == 0x87:
         client.send_reliable(b"\x84\x01")
-        print(packet["body"])
         client.send_reliable(b'\x94\x00\x00\x00\x01C\x00\x00\x00B\x88\x00\x00C\x00&\xca\x00\x00\x00\x00\x00\x00\x00\x00')
 
 client.options["custom_handler"] = handle
