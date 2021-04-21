@@ -74,6 +74,14 @@ def send_frame(packet):
     connection["sent_packets"].append(packet)
     connection["sequence_number"] += 1
     
+def send_unreliable(data):
+    packet = {
+        "reliability": 0,
+        "is_fragmented": False,
+        "body": data
+    }
+    send_frame(packet)
+    
 def send_reliable(data):
     packet = {
         "reliability": 2,
@@ -118,7 +126,7 @@ def send_connection_request():
         "request_time": int(time.time()),
         "use_security": 0
     }
-    send_reliable(packets.write_connection_request(packet))
+    send_unreliable(packets.write_connection_request(packet))
     
 def send_new_connection(ping_time):
     packet = {
@@ -128,7 +136,7 @@ def send_new_connection(ping_time):
         "ping_time": int(ping_time),
         "pong_time": int(time.time())
     }
-    send_reliable(packets.write_new_connection(packet))
+    send_unreliable(packets.write_new_connection(packet))
     connection["state"] = 2
     
 def send_connected_ping():
@@ -136,10 +144,10 @@ def send_connected_ping():
         "id": packets.id_connected_ping,
         "time": int(time.time())
     }
-    send_reliable(packets.write_connected_ping(packet))
+    send_unreliable(packets.write_connected_ping(packet))
     
 def send_connection_closed():
-    send_reliable(bytes([packets.id_connection_closed]))
+    send_unreliable(bytes([packets.id_connection_closed]))
     connection["state"] = 0
 
 def send_ack(sequence_numbers):
