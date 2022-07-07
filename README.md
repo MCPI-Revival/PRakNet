@@ -1,4 +1,7 @@
 # PRakNet
+
+## DEPRECATED use http://github.com/MFDGaming/RakNet.py instead
+
 A low level raknet implementation
 
 Installation:
